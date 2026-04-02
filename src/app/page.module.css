@@ -117,10 +117,20 @@
   color: #333;
   text-decoration: none;
   font-size: 15px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
 }
 
 .navItem:hover {
   color: var(--pangpang-blue);
+}
+
+.activeNavItem {
+  color: var(--pangpang-blue) !important;
+  border-bottom: 2px solid var(--pangpang-blue) !important;
+  margin-bottom: -2px;
 }
 
 .utilityLink {

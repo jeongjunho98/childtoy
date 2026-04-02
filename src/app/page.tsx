@@ -61,9 +61,14 @@ const ProductCard = ({ product }: { product: Product }) => {
 export default function Home() {
   const { cart } = useCart();
   const { user, logout } = useAuth();
+  
+  // 필터 상태 관리
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [specialFilter, setSpecialFilter] = useState<string | null>(null);
+  
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const categoryRef = useRef<HTMLDivElement>(null);
+  const goldBoxRef = useRef<HTMLElement>(null);
 
   const categories = [
     { id: 'robot', name: '로봇/변신', icon: '🤖' },
@@ -73,9 +78,18 @@ export default function Home() {
     { id: 'boardgame', name: '보드게임', icon: '🎲' },
   ];
 
-  const filteredProducts = selectedCategory === 'all' 
-    ? products 
-    : products.filter(p => p.category === selectedCategory);
+  // 필터링 로직 확장
+  let filteredProducts = [...products];
+
+  if (specialFilter === 'pangpang') {
+    filteredProducts = products.filter(p => p.isPangPang);
+  } else if (specialFilter === 'best') {
+    filteredProducts = [...products].sort((a, b) => b.reviewCount - a.reviewCount).slice(0, 8);
+  } else if (specialFilter === 'sale') {
+    filteredProducts = products.filter(p => p.originalPrice && (p.originalPrice > p.price));
+  } else if (selectedCategory !== 'all') {
+    filteredProducts = products.filter(p => p.category === selectedCategory);
+  }
 
   // 외부 클릭 시 카테고리 메뉴 닫기
   useEffect(() => {
@@ -88,9 +102,29 @@ export default function Home() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const scrollToGoldBox = () => {
+    goldBoxRef.current?.scrollIntoView({ behavior: 'smooth' });
+    setSpecialFilter(null);
+    setSelectedCategory('all');
+  };
+
+  const resetFilters = () => {
+    setSelectedCategory('all');
+    setSpecialFilter(null);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const getSectionTitle = () => {
+    if (specialFilter === 'pangpang') return "🚀 팡팡배송 상품";
+    if (specialFilter === 'best') return "🏆 실시간 베스트 상품";
+    if (specialFilter === 'sale') return "🎁 특별 기획전 상품";
+    if (selectedCategory !== 'all') return categories.find(c => c.id === selectedCategory)?.name + " 추천 상품";
+    return "전체 추천 상품";
+  };
+
   return (
     <div className={styles.main}>
-      {/* Utility Bar - 로그인/회원가입 명확히 표시 */}
+      {/* Utility Bar */}
       <div className={styles.utilityBar}>
         <div className="container" style={{ display: 'flex', justifyContent: 'flex-end', gap: '20px' }}>
           {user ? (
@@ -113,7 +147,7 @@ export default function Home() {
       <header className={styles.header}>
         <div className="container">
           <div className={styles.headerContent}>
-            <Link href="/" className={styles.logo}>ToyPangPang</Link>
+            <div onClick={resetFilters} style={{ cursor: 'pointer' }} className={styles.logo}>ToyPangPang</div>
             <div className={styles.searchBar}>
               <input type="text" className={styles.searchInput} placeholder="찾고 싶은 장난감을 검색해보세요!" />
               <div className={styles.searchBtn}>🔍</div>
@@ -133,52 +167,40 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Navigation Bar */}
+      {/* Navigation Bar - 기능 연결 */}
       <nav className={styles.navBar}>
         <div className="container">
           <div className={styles.navContent}>
-            <div 
-              className={styles.categoryMenuWrapper} 
-              ref={categoryRef}
-            >
-              <div 
-                className={styles.categoryBtn} 
-                onClick={() => setIsCategoryOpen(!isCategoryOpen)}
-              >
+            <div className={styles.categoryMenuWrapper} ref={categoryRef}>
+              <div className={styles.categoryBtn} onClick={() => setIsCategoryOpen(!isCategoryOpen)}>
                 ☰ 카테고리
               </div>
               {isCategoryOpen && (
                 <div className={styles.categoryDropdown}>
-                  <div 
-                    className={styles.categoryItem} 
-                    onClick={() => { setSelectedCategory('all'); setIsCategoryOpen(false); }}
-                  >
+                  <div className={styles.categoryItem} onClick={() => { resetFilters(); setIsCategoryOpen(false); }}>
                     🔥 전체보기
                   </div>
                   {categories.map(cat => (
-                    <div 
-                      key={cat.id} 
-                      className={styles.categoryItem}
-                      onClick={() => {
-                        setSelectedCategory(cat.id);
-                        setIsCategoryOpen(false);
-                      }}
-                    >
+                    <div key={cat.id} className={styles.categoryItem} onClick={() => {
+                      setSelectedCategory(cat.id);
+                      setSpecialFilter(null);
+                      setIsCategoryOpen(false);
+                    }}>
                       {cat.icon} {cat.name}
                     </div>
                   ))}
                 </div>
               )}
             </div>
-            <Link href="#" className={styles.navItem} onClick={() => setSelectedCategory('all')}>전체상품</Link>
-            <Link href="#" className={styles.navItem}>팡팡배송 🚀</Link>
-            <Link href="#" className={styles.navItem}>골드박스</Link>
-            <Link href="#" className={styles.navItem}>베스트</Link>
+            <button className={`${styles.navItem} ${!specialFilter && selectedCategory === 'all' ? styles.activeNavItem : ''}`} onClick={resetFilters}>전체상품</button>
+            <button className={`${styles.navItem} ${specialFilter === 'pangpang' ? styles.activeNavItem : ''}`} onClick={() => { setSpecialFilter('pangpang'); setSelectedCategory('all'); }}>팡팡배송 🚀</button>
+            <button className={styles.navItem} onClick={scrollToGoldBox}>골드박스</button>
+            <button className={`${styles.navItem} ${specialFilter === 'best' ? styles.activeNavItem : ''}`} onClick={() => { setSpecialFilter('best'); setSelectedCategory('all'); }}>베스트</button>
+            <button className={`${styles.navItem} ${specialFilter === 'sale' ? styles.activeNavItem : ''}`} onClick={() => { setSpecialFilter('sale'); setSelectedCategory('all'); }}>기획전</button>
           </div>
         </div>
       </nav>
 
-      {/* Hero Banner */}
       <section className={styles.hero}>
         <div className={styles.heroContent}>
           <h1 className={styles.heroTitle}>어린이날 미리 준비 특가! 🎁</h1>
@@ -187,29 +209,20 @@ export default function Home() {
       </section>
 
       <main className="container">
-        {/* Quick Menu */}
         <div className={styles.quickMenu}>
           {categories.map(cat => (
-            <button 
-              key={cat.id} 
-              className={`${styles.menuItem} ${selectedCategory === cat.id ? styles.activeMenu : ''}`}
-              onClick={() => setSelectedCategory(cat.id)}
-            >
+            <button key={cat.id} className={`${styles.menuItem} ${selectedCategory === cat.id ? styles.activeMenu : ''}`} onClick={() => { setSelectedCategory(cat.id); setSpecialFilter(null); }}>
               <div className={styles.menuIcon}>{cat.icon}</div>
               <span>{cat.name}</span>
             </button>
           ))}
-          <button 
-            className={`${styles.menuItem} ${selectedCategory === 'all' ? styles.activeMenu : ''}`} 
-            onClick={() => setSelectedCategory('all')}
-          >
+          <button className={`${styles.menuItem} ${selectedCategory === 'all' && !specialFilter ? styles.activeMenu : ''}`} onClick={resetFilters}>
             <div className={styles.menuIcon}>🔥</div>
             <span>전체보기</span>
           </button>
         </div>
 
-        {/* Flash Deals Section */}
-        <section className={styles.section}>
+        <section className={styles.section} ref={goldBoxRef}>
           <div className={styles.sectionHeader}>
             <h2 className={styles.sectionTitle}>오늘의 골드박스 📦</h2>
             <FlashTimer />
@@ -221,12 +234,9 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Recommended Section */}
         <section className={styles.section}>
           <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>
-              {selectedCategory === 'all' ? '추천 상품' : categories.find(c => c.id === selectedCategory)?.name + ' 추천'}
-            </h2>
+            <h2 className={styles.sectionTitle}>{getSectionTitle()}</h2>
           </div>
           <div className={styles.productGrid}>
             {filteredProducts.map(product => (
@@ -236,7 +246,6 @@ export default function Home() {
         </section>
       </main>
 
-      {/* Footer */}
       <footer className={styles.footer}>
         <div className="container">
           <div className={styles.footerContent}>
