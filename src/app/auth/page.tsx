@@ -23,7 +23,7 @@ function AuthContent() {
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
-  const [zipcode, setZipcode] = useState('');
+  const [zipcode, setZipcode] = useState(''); // Ensure initialized
   const [address, setAddress] = useState('');
   const [detailAddress, setDetailAddress] = useState('');
   
