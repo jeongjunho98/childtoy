@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import styles from "./page.module.css";
 import { products, Product } from "@/data/products";
@@ -60,8 +60,10 @@ const ProductCard = ({ product }: { product: Product }) => {
 
 export default function Home() {
   const { cart } = useCart();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
+  const categoryRef = useRef<HTMLDivElement>(null);
 
   const categories = [
     { id: 'robot', name: '로봇/변신', icon: '🤖' },
@@ -75,17 +77,35 @@ export default function Home() {
     ? products 
     : products.filter(p => p.category === selectedCategory);
 
+  // 외부 클릭 시 카테고리 메뉴 닫기
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (categoryRef.current && !categoryRef.current.contains(event.target as Node)) {
+        setIsCategoryOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
     <div className={styles.main}>
-      {/* Utility Bar */}
+      {/* Utility Bar - 로그인/회원가입 명확히 표시 */}
       <div className={styles.utilityBar}>
-        <div className="container">
-          <div className={styles.utilityContent}>
-            <Link href="/auth">로그인</Link>
-            <Link href="/auth">회원가입</Link>
-            <Link href="#">고객센터</Link>
-            <Link href="#">주문배송조회</Link>
-          </div>
+        <div className="container" style={{ display: 'flex', justifyContent: 'flex-end', gap: '20px' }}>
+          {user ? (
+            <>
+              <span style={{ fontWeight: 'bold', color: '#333' }}>{user.name}님 환영합니다!</span>
+              <button onClick={logout} className={styles.utilityLink}>로그아웃</button>
+            </>
+          ) : (
+            <>
+              <Link href="/auth" className={styles.utilityLink}>로그인</Link>
+              <Link href="/auth" className={styles.utilityLink}>회원가입</Link>
+            </>
+          )}
+          <Link href="#" className={styles.utilityLink}>고객센터</Link>
+          <Link href="#" className={styles.utilityLink}>주문배송조회</Link>
         </div>
       </div>
 
@@ -100,12 +120,13 @@ export default function Home() {
             </div>
             <div className={styles.headerIcons}>
               <Link href="/auth" className={styles.iconItem}>
-                <span>👤</span>
-                {user ? user.name : '마이팡'}
+                <span className={styles.icon}>👤</span>
+                <span className={styles.iconText}>{user ? '내정보' : '로그인'}</span>
               </Link>
               <Link href="/cart" className={styles.iconItem}>
-                <span>🛒</span>
-                장바구니 ({cart.length})
+                <span className={styles.icon}>🛒</span>
+                <span className={styles.iconText}>장바구니</span>
+                <span className={styles.cartBadge}>{cart.length}</span>
               </Link>
             </div>
           </div>
@@ -116,11 +137,43 @@ export default function Home() {
       <nav className={styles.navBar}>
         <div className="container">
           <div className={styles.navContent}>
-            <div className={styles.categoryBtn}>☰ 카테고리</div>
+            <div 
+              className={styles.categoryMenuWrapper} 
+              ref={categoryRef}
+            >
+              <div 
+                className={styles.categoryBtn} 
+                onClick={() => setIsCategoryOpen(!isCategoryOpen)}
+              >
+                ☰ 카테고리
+              </div>
+              {isCategoryOpen && (
+                <div className={styles.categoryDropdown}>
+                  <div 
+                    className={styles.categoryItem} 
+                    onClick={() => { setSelectedCategory('all'); setIsCategoryOpen(false); }}
+                  >
+                    🔥 전체보기
+                  </div>
+                  {categories.map(cat => (
+                    <div 
+                      key={cat.id} 
+                      className={styles.categoryItem}
+                      onClick={() => {
+                        setSelectedCategory(cat.id);
+                        setIsCategoryOpen(false);
+                      }}
+                    >
+                      {cat.icon} {cat.name}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <Link href="#" className={styles.navItem} onClick={() => setSelectedCategory('all')}>전체상품</Link>
             <Link href="#" className={styles.navItem}>팡팡배송 🚀</Link>
             <Link href="#" className={styles.navItem}>골드박스</Link>
             <Link href="#" className={styles.navItem}>베스트</Link>
-            <Link href="#" className={styles.navItem}>기획전</Link>
           </div>
         </div>
       </nav>
@@ -139,14 +192,17 @@ export default function Home() {
           {categories.map(cat => (
             <button 
               key={cat.id} 
-              className={styles.menuItem}
+              className={`${styles.menuItem} ${selectedCategory === cat.id ? styles.activeMenu : ''}`}
               onClick={() => setSelectedCategory(cat.id)}
             >
               <div className={styles.menuIcon}>{cat.icon}</div>
               <span>{cat.name}</span>
             </button>
           ))}
-          <button className={styles.menuItem} onClick={() => setSelectedCategory('all')}>
+          <button 
+            className={`${styles.menuItem} ${selectedCategory === 'all' ? styles.activeMenu : ''}`} 
+            onClick={() => setSelectedCategory('all')}
+          >
             <div className={styles.menuIcon}>🔥</div>
             <span>전체보기</span>
           </button>
