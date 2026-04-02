@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import styles from './checkout.module.css';
@@ -8,16 +8,59 @@ import homeStyles from '../page.module.css';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 
+declare global {
+  interface Window {
+    daum: any;
+  }
+}
+
 export default function CheckoutPage() {
   const { cart, totalPrice } = useCart();
   const { user } = useAuth();
   const router = useRouter();
 
+  const [zipcode, setZipcode] = useState('');
   const [address, setAddress] = useState('');
   const [detailAddress, setDetailAddress] = useState('');
-  const [phone, setPhone] = useState('');
+  const [phone, setPhone] = useState(user?.phone || '');
   const [deliveryMemo, setDeliveryMemo] = useState('문 앞에 놓아주세요');
   const [paymentMethod, setPaymentMethod] = useState('card');
+
+  useEffect(() => {
+    // Daum 우편번호 스크립트 로드
+    const script = document.createElement('script');
+    script.src = '//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
+    script.async = true;
+    document.head.appendChild(script);
+    
+    if (user) {
+      setAddress(user.address);
+      setDetailAddress(user.detailAddress);
+    }
+  }, [user]);
+
+  const handleAddressSearch = () => {
+    new window.daum.Postcode({
+      oncomplete: function(data: any) {
+        let fullAddress = data.address;
+        let extraAddress = '';
+
+        if (data.addressType === 'R') {
+          if (data.bname !== '') {
+            extraAddress += data.bname;
+          }
+          if (data.buildingName !== '') {
+            extraAddress += (extraAddress !== '' ? `, ${data.buildingName}` : data.buildingName);
+          }
+          fullAddress += (extraAddress !== '' ? ` (${extraAddress})` : '');
+        }
+
+        setZipcode(data.zonecode);
+        setAddress(fullAddress);
+        document.getElementById('detailAddress')?.focus();
+      }
+    }).open();
+  };
 
   const handlePay = (e: React.FormEvent) => {
     e.preventDefault();
@@ -157,35 +200,6 @@ export default function CheckoutPage() {
               <div className={styles.bankInfo}>
                 <p>입금 계좌: <strong>국민은행 123456-01-789101</strong></p>
                 <p>예금주: <strong>(주)토이팡팡</strong></p>
-                <p style={{ fontSize: '12px', color: '#888', marginTop: '5px' }}>* 주문 후 24시간 이내에 입금해주셔야 주문이 완료됩니다.</p>
-              </div>
-            )}
-          </section>
-
-          <div className={styles.summary}>
-            <div className={styles.summaryRow}>
-              <span>총 상품 금액</span>
-              <span>{totalPrice.toLocaleString()}원</span>
-            </div>
-            <div className={styles.summaryRow}>
-              <span>배송비</span>
-              <span>3,000원</span>
-            </div>
-            <div className={styles.summaryRow} style={{ fontWeight: 'bold', fontSize: '20px', color: 'var(--primary-pink)', marginTop: '10px' }}>
-              <span>최종 결제 금액</span>
-              <span>{(totalPrice + 3000).toLocaleString()}원</span>
-            </div>
-          </div>
-
-          <button className={styles.payBtn} type="submit">
-            {(totalPrice + 3000).toLocaleString()}원 결제하기
-          </button>
-        </form>
-      </main>
-    </div>
-  );
-}
-�팡팡</strong></p>
                 <p style={{ fontSize: '12px', color: '#888', marginTop: '5px' }}>* 주문 후 24시간 이내에 입금해주셔야 주문이 완료됩니다.</p>
               </div>
             )}
