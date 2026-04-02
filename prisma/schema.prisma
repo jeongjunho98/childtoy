@@ -30,8 +30,12 @@ model Product {
   name          String
   price         Int
   originalPrice Int?
-  image         String
+  image         String   // 메인 썸네일
+  detailImage   String?  // 상세 설명용 긴 이미지
   description   String
+  brand         String?  @default("토이팡팡")
+  manufacturer  String?  @default("협력업체")
+  ageRange      String?  @default("3세 이상")
   category      String
   rating        Float    @default(0)
   reviewCount   Int      @default(0)
