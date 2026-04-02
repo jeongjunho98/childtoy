@@ -7,79 +7,113 @@ export interface Review {
 }
 
 export interface Product {
-  id: number;
-  title: string;
-  price: string;
-  color: string;
-  tag: string | null;
+  id: string;
+  name: string;
+  price: number;
+  image: string;
   description: string;
-  imageUrl: string;
+  category: 'robot' | 'doll' | 'car' | 'education' | 'boardgame';
   reviews: Review[];
 }
 
-export const PRODUCTS: Product[] = [
-  { 
-    id: 1, 
-    title: "폭신폭신 곰돌이 인형", 
-    price: "25,000", 
-    color: "#FFB6C1", 
-    tag: "BEST", 
-    description: "최고급 면소재로 제작된 부드러운 곰돌이 인형입니다. 아이들이 잠잘 때 최고의 친구가 되어줄 거예요.",
-    imageUrl: "https://images.unsplash.com/photo-1559454403-b8fb88521f11?w=800&q=80",
+export const products: Product[] = [
+  // 로봇 카테고리
+  {
+    id: '1',
+    name: '헬로카봇 스톰 X',
+    price: 65000,
+    image: 'https://images.unsplash.com/photo-1531650661554-d18434743ef1?w=500&q=80',
+    description: '변신 자동차 로봇의 제왕! 5단 합체 스톰 X입니다.',
+    category: 'robot',
     reviews: [
-      { id: 'r1', userName: '도현맘', rating: 5, content: '너무 부드럽고 아이가 정말 좋아해요!', date: '2024-03-25' }
+      { id: 'r1', userName: '로봇왕', rating: 5, content: '아이들이 너무 좋아해요! 합체하는 재미가 있네요.', date: '2024-03-20' }
     ]
   },
-  { 
-    id: 2, 
-    title: "블록 쌓기 레고 세트", 
-    price: "45,000", 
-    color: "#87CEEB", 
-    tag: "매진임박", 
-    description: "상상력을 자극하는 다양한 블록 세트입니다. 아이들의 창의력 발달에 아주 좋습니다.",
-    imageUrl: "https://images.unsplash.com/photo-1585366119957-e5730b3d58e7?w=800&q=80",
+  {
+    id: '2',
+    name: '또봇 V 캡틴폴리스',
+    price: 48000,
+    image: 'https://images.unsplash.com/photo-1558060370-d644479cb6f7?w=500&q=80',
+    description: '정의로운 경찰 로봇 또봇 V 캡틴폴리스입니다.',
+    category: 'robot',
     reviews: []
   },
-  { 
-    id: 3, 
-    title: "무선 조종 슈퍼카", 
-    price: "89,000", 
-    color: "#FFD700", 
-    tag: "HOT", 
-    description: "강력한 모터와 빠른 속도를 자랑하는 무선 조종 슈퍼카입니다. 튼튼한 내구성으로 충격에 강합니다.",
-    imageUrl: "https://images.unsplash.com/photo-1594787318286-3d835c1d207f?w=800&q=80",
+  // 인형/피규어 카테고리
+  {
+    id: '3',
+    name: '캐치! 티니핑 하우스',
+    price: 89000,
+    image: 'https://images.unsplash.com/photo-1559715541-5daf8a0296d0?w=500&q=80',
+    description: '아이들의 아이돌! 티니핑들이 모여 사는 예쁜 하우스입니다.',
+    category: 'doll',
     reviews: [
-      { id: 'r2', userName: '민수아빠', rating: 4, content: '속도가 생각보다 빨라요. 밖에서 가지고 놀기 좋습니다.', date: '2024-03-20' }
+      { id: 'r2', userName: '핑구맘', rating: 5, content: '티니핑 지옥이지만 아이가 행복해하니 만족합니다.', date: '2024-03-25' }
     ]
   },
-  { 
-    id: 4, 
-    title: "반짝반짝 요술봉", 
-    price: "18,000", 
-    color: "#DDA0DD", 
-    tag: null, 
-    description: "반짝이는 불빛과 신비로운 소리가 나는 요술봉입니다. 공주님 놀이 필수 아이템!",
-    imageUrl: "https://images.unsplash.com/photo-1618842676088-c4d48a6a7c9d?w=800&q=80",
+  {
+    id: '4',
+    name: '뽀로로 말하는 마트 계산대',
+    price: 35000,
+    image: 'https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?w=500&q=80',
+    description: '뽀로로와 함께 즐거운 마트 놀이를 즐겨보세요.',
+    category: 'doll',
     reviews: []
   },
-  { 
-    id: 5, 
-    title: "공룡 탐험 피규어", 
-    price: "32,000", 
-    color: "#90EE90", 
-    tag: "매진임박", 
-    description: "실제 공룡의 모습을 정교하게 재현한 피규어 세트입니다. 공룡을 좋아하는 아이들에게 최고의 선물입니다.",
-    imageUrl: "https://images.unsplash.com/photo-1558448291-20e39c42f494?w=800&q=80",
+  // 자동차/탈것 카테고리
+  {
+    id: '5',
+    name: '타요 컨트롤 주차타워',
+    price: 52000,
+    image: 'https://images.unsplash.com/photo-1581235720704-06d3acfcb36f?w=500&q=80',
+    description: '꼬마버스 타요와 친구들의 신나는 주차타워 놀이!',
+    category: 'car',
     reviews: []
   },
-  { 
-    id: 6, 
-    title: "주방 놀이 풀세트", 
-    price: "120,000", 
-    color: "#F08080", 
-    tag: "SALE", 
-    description: "다양한 식기구와 모형 음식이 포함된 대형 주방 놀이 세트입니다. 역할 놀이를 통해 사회성을 길러주세요.",
-    imageUrl: "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?w=800&q=80",
+  {
+    id: '6',
+    name: '브루더 맥 트럭 소방차',
+    price: 98000,
+    image: 'https://images.unsplash.com/photo-1594930511826-64571db11660?w=500&q=80',
+    description: '실제 소방차를 그대로 재현한 정교한 브루더 소방차입니다.',
+    category: 'car',
     reviews: []
   },
+  // 교구/학습 카테고리
+  {
+    id: '7',
+    name: '핑크퐁 사운드북 세트',
+    price: 28000,
+    image: 'https://images.unsplash.com/photo-1544928147-79a2dbc1f389?w=500&q=80',
+    description: '상어가족과 함께 노래하며 배우는 사운드북 5종 세트.',
+    category: 'education',
+    reviews: []
+  },
+  {
+    id: '8',
+    name: '코딩펫 밀키',
+    price: 72000,
+    image: 'https://images.unsplash.com/photo-1516062423079-7ca13cdc7f5a?w=500&q=80',
+    description: '귀여운 햄스터 로봇과 함께 배우는 첫 코딩 놀이!',
+    category: 'education',
+    reviews: []
+  },
+  // 보드게임 카테고리
+  {
+    id: '9',
+    name: '모두의 마블 메가디럭스',
+    price: 42000,
+    image: 'https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09?w=500&q=80',
+    description: '온 가족이 함께 즐기는 국민 보드게임 모두의 마블!',
+    category: 'boardgame',
+    reviews: []
+  },
+  {
+    id: '10',
+    name: '할리갈리 컵스',
+    price: 18000,
+    image: 'https://images.unsplash.com/photo-1611996575749-79a3be236c34?w=500&q=80',
+    description: '빠른 손놀림이 생명! 순발력을 기르는 할리갈리 컵스입니다.',
+    category: 'boardgame',
+    reviews: []
+  }
 ];

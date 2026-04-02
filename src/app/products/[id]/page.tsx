@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import styles from "./product.module.css";
 import homeStyles from "../../page.module.css";
-import { PRODUCTS, Review } from "@/data/products";
+import { products, Review } from "@/data/products";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 
@@ -15,8 +15,8 @@ export default function ProductDetail() {
   const { addToCart, cart } = useCart();
   const { user } = useAuth();
   
-  const id = Number(params.id);
-  const product = PRODUCTS.find((p) => p.id === id);
+  const id = params.id as string;
+  const product = products.find((p) => p.id === id);
 
   const [reviews, setReviews] = useState<Review[]>([]);
   const [newReviewContent, setNewReviewContent] = useState('');
@@ -28,7 +28,7 @@ export default function ProductDetail() {
       if (savedReviews) {
         setReviews(JSON.parse(savedReviews));
       } else {
-        setReviews(product.reviews);
+        setReviews(product.reviews || []);
       }
     }
   }, [product]);
@@ -77,27 +77,39 @@ export default function ProductDetail() {
         <div className={styles.detailWrapper}>
           <div className={styles.imageArea} style={{ background: '#fff' }}>
             <img 
-              src={product.imageUrl} 
-              alt={product.title} 
+              src={product.image} 
+              alt={product.name} 
               style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
             />
           </div>
           <div className={styles.infoArea}>
-            <h1 className={styles.title}>{product.title}</h1>
-            <p className={styles.price}>{product.price}원</p>
+            <h1 className={styles.title}>{product.name}</h1>
+            <p className={styles.price}>{product.price.toLocaleString()}원</p>
             <p className={styles.description}>{product.description}</p>
             
             <div className={styles.btnGroup}>
               <button 
                 className={styles.cartBtn}
-                onClick={() => addToCart(product)}
+                onClick={() => addToCart({
+                  id: parseInt(product.id),
+                  title: product.name,
+                  price: product.price.toLocaleString(),
+                  imageUrl: product.image,
+                  description: product.description
+                })}
               >
                 장바구니 담기
               </button>
               <button 
                 className={styles.buyBtn}
                 onClick={() => {
-                  addToCart(product);
+                  addToCart({
+                    id: parseInt(product.id),
+                    title: product.name,
+                    price: product.price.toLocaleString(),
+                    imageUrl: product.image,
+                    description: product.description
+                  });
                   router.push('/cart');
                 }}
               >
