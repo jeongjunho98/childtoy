@@ -20,6 +20,7 @@ model User {
   zipcode       String?
   address       String
   detailAddress String
+  role          String   @default("USER") // USER, ADMIN
   createdAt     DateTime @default(now())
   orders        Order[]
 }

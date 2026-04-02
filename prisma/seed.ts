@@ -30,6 +30,22 @@ const productsData = [
 ];
 
 async function main() {
+  console.log('Seeding admin user...');
+  await prisma.user.upsert({
+    where: { username: 'admin' },
+    update: {},
+    create: {
+      username: 'admin',
+      password: 'admin1234', // 실제 운영 시에는 반드시 해싱 필요
+      name: '관리자',
+      email: 'admin@toypang.com',
+      phone: '010-4851-7984',
+      address: '전라남도 나주시 중야1길 37',
+      detailAddress: '대방엘리움1차아파트 106동 1401호',
+      role: 'ADMIN'
+    }
+  });
+
   console.log('Seeding products...');
   for (const product of productsData) {
     await prisma.product.upsert({
