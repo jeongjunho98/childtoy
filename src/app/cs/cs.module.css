@@ -1,41 +1,159 @@
 .csBox {
   background: white;
-  padding: 50px;
-  border-radius: 12px;
+  padding: 60px 40px;
+  border-radius: 40px;
+  box-shadow: 0 20px 60px rgba(162, 210, 255, 0.15);
 }
 
-.csBox h2 {
-  font-size: 28px;
-  margin-bottom: 40px;
+.mainTitle {
+  font-size: 36px;
+  font-weight: 900;
   text-align: center;
+  margin-bottom: 60px;
+  color: #333;
 }
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
 }
 
-.item {
-  border: 1px solid #eee;
-  padding: 30px;
-  border-radius: 12px;
+.card {
+  background: #fdfbfb;
+  padding: 40px 30px;
+  border-radius: 30px;
   text-align: center;
-  transition: transform 0.2s;
+  border: 3px solid #f0f8ff;
+  transition: all 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-10px);
+  border-color: #ffafcc;
+}
+
+.iconCircle {
+  width: 70px;
+  height: 70px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  margin: 0 auto 20px;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+}
+
+.card h3 {
+  font-size: 22px;
+  font-weight: 800;
+  margin-bottom: 25px;
+  color: #444;
+}
+
+/* FAQ Accordion */
+.faqList {
+  text-align: left;
+}
+
+.faqItem {
+  margin-bottom: 10px;
+  border-radius: 15px;
+  background: white;
+  overflow: hidden;
+}
+
+.faqQuestion {
+  padding: 15px 20px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  background: #fff;
+  transition: background 0.2s;
+  display: flex;
+  justify-content: space-between;
+}
+
+.faqQuestion:hover {
+  background: #f0f8ff;
+}
+
+.faqAnswer {
+  padding: 15px 20px;
+  font-size: 13px;
+  color: #666;
+  line-height: 1.6;
+  border-top: 1px dashed #eee;
+  background: #fff;
+}
+
+/* Inquiry Form */
+.inquiryForm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.csInput, .csTextarea {
+  width: 100%;
+  padding: 12px 15px;
+  border-radius: 15px;
+  border: 2px solid #eee;
+  font-size: 14px;
+  outline: none;
+}
+
+.csTextarea {
+  height: 100px;
+  resize: none;
+}
+
+.csInput:focus, .csTextarea:focus {
+  border-color: #a2d2ff;
+}
+
+.submitBtn {
+  flex: 1;
+  padding: 12px;
+  background: #a2d2ff;
+  color: white;
+  border: none;
+  border-radius: 15px;
+  font-weight: 800;
   cursor: pointer;
 }
 
-.item:hover {
-  transform: translateY(-5px);
-  border-color: #0071e3;
+.cancelBtn {
+  padding: 12px 20px;
+  background: #eee;
+  border: none;
+  border-radius: 15px;
+  cursor: pointer;
 }
 
-.item h3 {
-  margin-bottom: 15px;
-  color: #333;
+.actionBtn, .callBtn {
+  display: inline-block;
+  width: 100%;
+  padding: 15px;
+  background: #ffafcc;
+  color: white;
+  border-radius: 50px;
+  font-weight: 800;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
 }
 
-.item p {
-  color: #888;
-  font-size: 14px;
+.actionBtn:hover, .callBtn:hover {
+  background: #f06292;
+}
+
+.csNum {
+  font-size: 28px;
+  font-weight: 900;
+  color: #a2d2ff;
+  margin-bottom: 5px;
 }
