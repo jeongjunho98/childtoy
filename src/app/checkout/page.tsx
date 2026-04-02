@@ -14,15 +14,24 @@ export default function CheckoutPage() {
   const router = useRouter();
 
   const [address, setAddress] = useState('');
+  const [detailAddress, setDetailAddress] = useState('');
   const [phone, setPhone] = useState('');
-  const [cardNumber, setCardNumber] = useState('');
+  const [deliveryMemo, setDeliveryMemo] = useState('문 앞에 놓아주세요');
+  const [paymentMethod, setPaymentMethod] = useState('card');
 
   const handlePay = (e: React.FormEvent) => {
     e.preventDefault();
     if (cart.length === 0) return;
     
-    // 결제 시뮬레이션 (딜레이)
-    alert('결제 승인 중입니다... 잠시만 기다려주세요! 💳');
+    const methodNames: Record<string, string> = {
+      card: '카드 결제',
+      bank: '무통장 입금',
+      kakao: '카카오페이',
+      naver: '네이버페이',
+      samsung: '삼성페이'
+    };
+
+    alert(`${methodNames[paymentMethod]} 승인 중입니다... 잠시만 기다려주세요! 💳`);
     setTimeout(() => {
       router.push('/checkout/success');
     }, 1500);
@@ -50,51 +59,99 @@ export default function CheckoutPage() {
 
         <form className={styles.form} onSubmit={handlePay}>
           <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>배송 정보</h2>
+            <h2 className={styles.sectionTitle}>1. 배송 정보</h2>
             <div className={styles.form}>
               <input 
                 className={styles.input} 
                 type="text" 
-                placeholder="받는 사람" 
+                placeholder="받는 분 성함" 
                 defaultValue={user?.name || ''} 
                 required 
               />
               <input 
                 className={styles.input} 
                 type="tel" 
-                placeholder="연락처 (- 제외)" 
+                placeholder="휴대폰 번호 (- 제외)" 
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 required 
               />
+              <div style={{ display: 'flex', gap: '5px' }}>
+                <input className={styles.input} style={{ flex: 1 }} type="text" placeholder="우편번호" readOnly value="12345" />
+                <button type="button" style={{ padding: '0 15px', background: '#eee', borderRadius: '8px' }}>주소검색</button>
+              </div>
               <input 
                 className={styles.input} 
                 type="text" 
-                placeholder="배송 주소" 
+                placeholder="기본 주소" 
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 required 
               />
+              <input 
+                className={styles.input} 
+                type="text" 
+                placeholder="상세 주소 (아파트/동/호수 등)" 
+                value={detailAddress}
+                onChange={(e) => setDetailAddress(e.target.value)}
+                required 
+              />
+              <select 
+                className={styles.input}
+                value={deliveryMemo}
+                onChange={(e) => setDeliveryMemo(e.target.value)}
+              >
+                <option value="문 앞에 놓아주세요">문 앞에 놓아주세요</option>
+                <option value="경비실에 맡겨주세요">경비실에 맡겨주세요</option>
+                <option value="택배함에 넣어주세요">택배함에 넣어주세요</option>
+                <option value="직접 수령하겠습니다">직접 수령하겠습니다</option>
+                <option value="직접 입력">직접 입력</option>
+              </select>
             </div>
           </section>
 
           <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>결제 정보</h2>
-            <div className={styles.form}>
-              <input 
-                className={styles.input} 
-                type="text" 
-                placeholder="카드 번호 (16자리)" 
-                maxLength={16}
-                value={cardNumber}
-                onChange={(e) => setCardNumber(e.target.value)}
-                required 
-              />
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <input className={styles.input} style={{ flex: 1 }} type="text" placeholder="MM/YY" required />
-                <input className={styles.input} style={{ flex: 1 }} type="password" placeholder="CVC" maxLength={3} required />
-              </div>
+            <h2 className={styles.sectionTitle}>2. 결제 수단</h2>
+            <div className={styles.paymentGrid}>
+              <label className={`${styles.paymentOption} ${paymentMethod === 'card' ? styles.activePayment : ''}`}>
+                <input type="radio" name="pay" value="card" checked={paymentMethod === 'card'} onChange={() => setPaymentMethod('card')} />
+                카드결제
+              </label>
+              <label className={`${styles.paymentOption} ${paymentMethod === 'bank' ? styles.activePayment : ''}`}>
+                <input type="radio" name="pay" value="bank" checked={paymentMethod === 'bank'} onChange={() => setPaymentMethod('bank')} />
+                무통장입금
+              </label>
+              <label className={`${styles.paymentOption} ${paymentMethod === 'kakao' ? styles.activePayment : ''}`}>
+                <input type="radio" name="pay" value="kakao" checked={paymentMethod === 'kakao'} onChange={() => setPaymentMethod('kakao')} />
+                카카오페이
+              </label>
+              <label className={`${styles.paymentOption} ${paymentMethod === 'naver' ? styles.activePayment : ''}`}>
+                <input type="radio" name="pay" value="naver" checked={paymentMethod === 'naver'} onChange={() => setPaymentMethod('naver')} />
+                네이버페이
+              </label>
+              <label className={`${styles.paymentOption} ${paymentMethod === 'samsung' ? styles.activePayment : ''}`}>
+                <input type="radio" name="pay" value="samsung" checked={paymentMethod === 'samsung'} onChange={() => setPaymentMethod('samsung')} />
+                삼성페이
+              </label>
             </div>
+            
+            {paymentMethod === 'card' && (
+              <div className={styles.form} style={{ marginTop: '15px' }}>
+                <input className={styles.input} type="text" placeholder="카드 번호 (16자리)" maxLength={16} required />
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <input className={styles.input} style={{ flex: 1 }} type="text" placeholder="MM/YY" required />
+                  <input className={styles.input} style={{ flex: 1 }} type="password" placeholder="CVC" maxLength={3} required />
+                </div>
+              </div>
+            )}
+
+            {paymentMethod === 'bank' && (
+              <div className={styles.bankInfo}>
+                <p>입금 계좌: <strong>국민은행 123456-01-789101</strong></p>
+                <p>예금주: <strong>(주)토이팡팡</strong></p>
+                <p style={{ fontSize: '12px', color: '#888', marginTop: '5px' }}>* 주문 후 24시간 이내에 입금해주셔야 주문이 완료됩니다.</p>
+              </div>
+            )}
           </section>
 
           <div className={styles.summary}>
@@ -113,7 +170,7 @@ export default function CheckoutPage() {
           </div>
 
           <button className={styles.payBtn} type="submit">
-            결제하기
+            {(totalPrice + 3000).toLocaleString()}원 결제하기
           </button>
         </form>
       </main>

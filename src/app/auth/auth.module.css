@@ -56,6 +56,37 @@
   margin-top: 10px;
 }
 
+.socialGroup {
+  margin-top: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.naverBtn {
+  background: #03C75A;
+  color: white;
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.kakaoBtn {
+  background: #FEE500;
+  color: #191919;
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
 .userInfo {
   margin-top: 30px;
 }

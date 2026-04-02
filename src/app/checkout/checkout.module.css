@@ -61,3 +61,42 @@
   border-radius: 10px;
   margin-top: 20px;
 }
+
+.paymentGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.paymentOption {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 15px;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 14px;
+}
+
+.paymentOption input {
+  cursor: pointer;
+}
+
+.activePayment {
+  border-color: var(--primary-blue);
+  background-color: #f0f7ff;
+  font-weight: bold;
+  color: var(--primary-blue);
+}
+
+.bankInfo {
+  margin-top: 15px;
+  padding: 15px;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  font-size: 14px;
+  line-height: 1.6;
+}

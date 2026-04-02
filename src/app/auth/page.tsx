@@ -31,6 +31,16 @@ export default function AuthPage() {
     }
   };
 
+  const handleSocialLogin = (platform: string) => {
+    const socialUser = {
+      name: `${platform} 친구`,
+      email: `${platform.toLowerCase()}@toy.pang`
+    };
+    signup(socialUser);
+    alert(`${platform} 계정으로 간편 가입되었습니다! 🎈`);
+    router.push('/');
+  };
+
   if (user) {
     return (
       <div className={styles.container}>
@@ -92,9 +102,16 @@ export default function AuthPage() {
           {isLogin ? '로그인' : '회원가입'}
         </button>
       </form>
-      <p style={{ marginTop: '20px', fontSize: '14px', color: '#999' }}>
-        * Mock 시스템으로 실제 이메일 인증은 수행하지 않습니다.
-      </p>
+
+      <div className={styles.socialGroup}>
+        <p style={{ fontSize: '12px', color: '#aaa', margin: '15px 0' }}>또는 간편 로그인</p>
+        <button className={styles.naverBtn} onClick={() => handleSocialLogin('Naver')}>
+          <span>N</span> 네이버 로그인
+        </button>
+        <button className={styles.kakaoBtn} onClick={() => handleSocialLogin('Kakao')}>
+          <span>K</span> 카카오 로그인
+        </button>
+      </div>
     </div>
   );
 }
