@@ -23,7 +23,7 @@ function AuthContent() {
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
-  const [zipcode, setZipcode] = useState(''); // Ensure initialized
+  const [zipcode, setZipcode] = useState('');
   const [address, setAddress] = useState('');
   const [detailAddress, setDetailAddress] = useState('');
   
@@ -42,7 +42,6 @@ function AuthContent() {
   }, [searchParams]);
 
   useEffect(() => {
-    // Daum 우편번호 스크립트 로드
     const script = document.createElement('script');
     script.src = '//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
     script.async = true;
@@ -54,17 +53,11 @@ function AuthContent() {
       oncomplete: function(data: any) {
         let fullAddress = data.address;
         let extraAddress = '';
-
         if (data.addressType === 'R') {
-          if (data.bname !== '') {
-            extraAddress += data.bname;
-          }
-          if (data.buildingName !== '') {
-            extraAddress += (extraAddress !== '' ? `, ${data.buildingName}` : data.buildingName);
-          }
+          if (data.bname !== '') extraAddress += data.bname;
+          if (data.buildingName !== '') extraAddress += (extraAddress !== '' ? `, ${data.buildingName}` : data.buildingName);
           fullAddress += (extraAddress !== '' ? ` (${extraAddress})` : '');
         }
-
         setZipcode(data.zonecode);
         setAddress(fullAddress);
         document.getElementById('detailAddress')?.focus();
@@ -72,7 +65,8 @@ function AuthContent() {
     }).open();
   };
 
-  const handleSendSms = () => {
+  const handleSendSms = (e: React.MouseEvent) => {
+    e.preventDefault();
     if (!phone) {
       alert('휴대폰 번호를 먼저 입력해주세요.');
       return;
@@ -81,7 +75,8 @@ function AuthContent() {
     alert('인증번호 [1234]가 발송되었습니다. (테스트용)');
   };
 
-  const handleVerifySms = () => {
+  const handleVerifySms = (e: React.MouseEvent) => {
+    e.preventDefault();
     if (smsCode === '1234') {
       setIsSmsVerified(true);
       alert('인증이 완료되었습니다! ✅');
@@ -92,21 +87,15 @@ function AuthContent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('handleSubmit triggered, isLogin:', isLogin);
+    console.log('Login attempt:', username);
+    
     if (isLogin) {
-      console.log('Attempting login with:', username);
-      try {
-        const success = await login(username, password);
-        console.log('Login result:', success);
-        if (success) {
-          alert('로그인 성공! 🎉');
-          router.push('/');
-        } else {
-          alert('아이디 또는 비밀번호가 틀렸거나 사용자를 찾을 수 없습니다.');
-        }
-      } catch (err) {
-        console.error('Login error in handleSubmit:', err);
-        alert('로그인 중 시스템 오류가 발생했습니다.');
+      const success = await login(username, password);
+      if (success) {
+        alert('로그인 성공! 🎉');
+        router.push('/');
+      } else {
+        alert('아이디 또는 비밀번호가 틀렸습니다.');
       }
     } else {
       if (!isSmsVerified) {
@@ -114,44 +103,35 @@ function AuthContent() {
         return;
       }
       const success = await signup({ 
-        username, 
-        password, 
-        name, 
-        email, 
-        phone, 
-        zipcode,
-        address, 
-        detailAddress,
-        role: 'USER'
+        username, password, name, email, phone, zipcode, address, detailAddress, role: 'USER'
       });
       if (success) {
         alert('회원가입 성공! 🎉');
         router.push('/');
       } else {
-        alert('회원가입에 실패했습니다. 이미 존재하는 아이디일 수 있습니다.');
+        alert('가입에 실패했습니다. 아이디 중복을 확인해주세요.');
       }
     }
   };
 
   const handleSocialLogin = async (platform: string) => {
     const socialUser = {
-      username: `${platform.toLowerCase()}_${Date.now()}`,
+      username: `${platform.toLowerCase()}_user_ Pang`, // 고정 아이디로 간편 로그인 시뮬레이션
       password: '', 
       name: `${platform} 친구`,
       email: `${platform.toLowerCase()}@toy.pang`,
       phone: '010-0000-0000',
       zipcode: '12345',
       address: '서울시 어딘가',
-      detailAddress: '동심 가득한 아파트 101호',
+      detailAddress: '간편 가입 회원',
       role: 'USER'
     };
     const success = await signup(socialUser);
     if (success) {
-      alert(`${platform} 계정으로 간편 가입되었습니다! 🎈`);
+      alert(`${platform} 계정으로 로그인되었습니다! 🎈`);
       router.push('/');
     }
   };
-
 
   if (user) {
     return (
@@ -161,13 +141,11 @@ function AuthContent() {
           <h2 className={styles.title}>환영합니다, {user.name}님!</h2>
           <p>ID: {user.username}</p>
           <p>Email: {user.email}</p>
-          <p>Phone: {user.phone}</p>
-          <p>Address: {user.address} {user.detailAddress}</p>
           <button className={styles.logoutBtn} onClick={logout}>로그아웃</button>
           <br />
-          <button className={styles.deleteBtn} onClick={() => {
-            if (confirm('정말 탈퇴하시겠습니까? 모든 정보가 사라집니다.')) {
-              deleteAccount();
+          <button className={styles.deleteBtn} onClick={async () => {
+            if (confirm('정말 탈퇴하시겠습니까?')) {
+              await deleteAccount();
               router.push('/');
             }
           }}>회원 탈퇴하기</button>
@@ -180,138 +158,44 @@ function AuthContent() {
     <div className={styles.container} style={{ maxWidth: '500px' }}>
       <Link href="/" className={homeStyles.logo}>토이팡팡 🎈</Link>
       <div className={styles.tabs}>
-        <button 
-          className={`${styles.tab} ${isLogin ? styles.activeTab : ''}`}
-          onClick={() => setIsLogin(true)}
-        >
-          로그인
-        </button>
-        <button 
-          className={`${styles.tab} ${!isLogin ? styles.activeTab : ''}`}
-          onClick={() => setIsLogin(false)}
-        >
-          회원가입
-        </button>
+        <button type="button" className={`${styles.tab} ${isLogin ? styles.activeTab : ''}`} onClick={() => setIsLogin(true)}>로그인</button>
+        <button type="button" className={`${styles.tab} ${!isLogin ? styles.activeTab : ''}`} onClick={() => setIsLogin(false)}>회원가입</button>
       </div>
 
       <form className={styles.form} onSubmit={handleSubmit}>
-        <input 
-          className={styles.input}
-          type="text" 
-          placeholder="아이디" 
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          required
-        />
-        <input 
-          className={styles.input}
-          type="password" 
-          placeholder="비밀번호" 
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
+        <input className={styles.input} type="text" placeholder="아이디" value={username} onChange={(e) => setUsername(e.target.value)} required />
+        <input className={styles.input} type="password" placeholder="비밀번호" value={password} onChange={(e) => setPassword(e.target.value)} required />
         {!isLogin && (
           <>
-            <input 
-              className={styles.input}
-              type="text" 
-              placeholder="이름" 
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-            <input 
-              className={styles.input}
-              type="email" 
-              placeholder="이메일 주소" 
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+            <input className={styles.input} type="text" placeholder="이름" value={name} onChange={(e) => setName(e.target.value)} required />
+            <input className={styles.input} type="email" placeholder="이메일 주소" value={email} onChange={(e) => setEmail(e.target.value)} required />
             <div style={{ display: 'flex', gap: '5px' }}>
-              <input 
-                className={styles.input}
-                style={{ flex: 1 }}
-                type="tel" 
-                placeholder="휴대폰 번호 (-포함)" 
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                required
-              />
-              <button 
-                type="button" 
-                onClick={handleSendSms}
-                style={{ background: '#eee', borderRadius: '8px', padding: '0 10px', fontSize: '12px' }}
-                disabled={isSmsVerified}
-              >
+              <input className={styles.input} style={{ flex: 1 }} type="tel" placeholder="휴대폰 번호 (-포함)" value={phone} onChange={(e) => setPhone(e.target.value)} required />
+              <button type="button" onClick={handleSendSms} style={{ background: '#eee', borderRadius: '10px', padding: '0 10px', fontSize: '12px' }} disabled={isSmsVerified}>
                 {isSmsSent ? '재발송' : '인증요청'}
               </button>
             </div>
             {isSmsSent && !isSmsVerified && (
               <div style={{ display: 'flex', gap: '5px' }}>
-                <input 
-                  className={styles.input}
-                  style={{ flex: 1 }}
-                  type="text" 
-                  placeholder="인증번호 입력 (1234)" 
-                  value={smsCode}
-                  onChange={(e) => setSmsCode(e.target.value)}
-                />
-                <button 
-                  type="button" 
-                  onClick={handleVerifySms}
-                  style={{ background: 'var(--primary-blue)', color: 'white', borderRadius: '8px', padding: '0 10px', fontSize: '12px' }}
-                >
-                  확인
-                </button>
+                <input className={styles.input} style={{ flex: 1 }} type="text" placeholder="인증번호 (1234)" value={smsCode} onChange={(e) => setSmsCode(e.target.value)} />
+                <button type="button" onClick={handleVerifySms} style={{ background: 'var(--toy-blue)', color: 'white', borderRadius: '10px', padding: '0 10px', fontSize: '12px' }}>확인</button>
               </div>
             )}
-            {isSmsVerified && <p style={{ color: 'green', fontSize: '12px', textAlign: 'left' }}>인증이 완료되었습니다.</p>}
-            
             <div style={{ display: 'flex', gap: '5px' }}>
               <input className={styles.input} style={{ flex: 1 }} type="text" placeholder="우편번호" readOnly value={zipcode} />
-              <button 
-                type="button" 
-                onClick={handleAddressSearch}
-                style={{ padding: '0 15px', background: 'var(--primary-yellow)', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold' }}
-              >
-                주소검색
-              </button>
+              <button type="button" onClick={handleAddressSearch} style={{ padding: '0 15px', background: 'var(--toy-yellow)', borderRadius: '10px', fontWeight: 'bold' }}>주소검색</button>
             </div>
-            <input 
-              className={styles.input}
-              type="text" 
-              placeholder="기본 주소" 
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              readOnly
-              required
-            />
-            <input 
-              id="detailAddress"
-              className={styles.input}
-              type="text" 
-              placeholder="상세 주소" 
-              value={detailAddress}
-              onChange={(e) => setDetailAddress(e.target.value)}
-              required
-            />
+            <input className={styles.input} type="text" placeholder="기본 주소" value={address} readOnly required />
+            <input id="detailAddress" className={styles.input} type="text" placeholder="상세 주소" value={detailAddress} onChange={(e) => setDetailAddress(e.target.value)} required />
           </>
         )}
-        <button className={styles.submitBtn} type="submit">
-          {isLogin ? '로그인' : '회원가입'}
-        </button>
+        <button className={styles.submitBtn} type="submit">{isLogin ? '로그인' : '가입하기'}</button>
       </form>
 
       <div className={styles.socialGroup}>
         <p style={{ fontSize: '12px', color: '#aaa', margin: '15px 0' }}>또는 간편 로그인</p>
-        <button className={styles.naverBtn} onClick={() => handleSocialLogin('Naver')}>
-          <span>N</span> 네이버 로그인
-        </button>
-        <button className={styles.kakaoBtn} onClick={() => handleSocialLogin('Kakao')}>
-          <span>K</span> 카카오 로그인
-        </button>
+        <button type="button" className={styles.naverBtn} onClick={() => handleSocialLogin('Naver')}><span>N</span> 네이버 로그인</button>
+        <button type="button" className={styles.kakaoBtn} onClick={() => handleSocialLogin('Kakao')}><span>K</span> 카카오 로그인</button>
       </div>
     </div>
   );
@@ -319,7 +203,7 @@ function AuthContent() {
 
 export default function AuthPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<div>로딩 중...</div>}>
       <AuthContent />
     </Suspense>
   );
