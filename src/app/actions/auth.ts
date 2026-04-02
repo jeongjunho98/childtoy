@@ -58,7 +58,7 @@ export async function signupAction(rawData: any) {
     return userWithoutPassword;
   } catch (error) {
     if (error instanceof z.ZodError) {
-      console.error('Validation error:', error.errors);
+      console.error('Validation error:', error.issues);
     }
     console.error('Signup action error:', error);
     return null;
