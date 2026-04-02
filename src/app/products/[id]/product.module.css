@@ -12,14 +12,10 @@
 
 .imageArea {
   flex: 1;
-  height: 400px;
+  height: 450px;
   border-radius: var(--border-radius);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  font-weight: bold;
-  color: white;
+  overflow: hidden;
+  box-shadow: var(--shadow);
 }
 
 .infoArea {
@@ -29,6 +25,7 @@
 .title {
   font-size: 32px;
   margin-bottom: 10px;
+  font-weight: 800;
 }
 
 .price {
@@ -43,6 +40,8 @@
   color: #666;
   line-height: 1.8;
   margin-bottom: 40px;
+  padding-bottom: 30px;
+  border-bottom: 1px solid #eee;
 }
 
 .btnGroup {
@@ -52,21 +51,83 @@
 
 .cartBtn {
   flex: 1;
-  padding: 15px;
+  padding: 18px;
   background: white;
   border: 2px solid var(--primary-blue);
   color: var(--primary-blue);
   font-weight: bold;
-  border-radius: 8px;
+  border-radius: 12px;
 }
 
 .buyBtn {
   flex: 1;
-  padding: 15px;
+  padding: 18px;
   background: var(--primary-blue);
   color: white;
   font-weight: bold;
+  border-radius: 12px;
+}
+
+/* Review Styles */
+.reviewSection {
+  margin-top: 80px;
+  padding-top: 50px;
+  border-top: 3px solid var(--primary-yellow);
+}
+
+.reviewTitle {
+  font-size: 24px;
+  margin-bottom: 30px;
+}
+
+.reviewForm {
+  background: #f9f9f9;
+  padding: 30px;
+  border-radius: 15px;
+  margin-bottom: 40px;
+}
+
+.reviewInput {
+  width: 100%;
+  height: 100px;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  margin: 15px 0;
+  font-family: inherit;
+}
+
+.submitReviewBtn {
+  background: var(--primary-pink);
+  color: white;
+  padding: 10px 25px;
   border-radius: 8px;
+  font-weight: bold;
+}
+
+.reviewList {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.reviewItem {
+  padding: 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.reviewHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.userName {
+  font-weight: bold;
+}
+
+.rating {
+  color: #ffcc00;
 }
 
 @media (max-width: 768px) {

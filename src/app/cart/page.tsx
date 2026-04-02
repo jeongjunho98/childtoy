@@ -5,14 +5,16 @@ import { useRouter } from "next/navigation";
 import styles from "./cart.module.css";
 import homeStyles from "../page.module.css";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
 
 export default function CartPage() {
   const { cart, removeFromCart, totalPrice } = useCart();
+  const { user } = useAuth();
   const router = useRouter();
 
   const handleCheckout = () => {
     if (cart.length === 0) return;
-    router.push('/checkout/success');
+    router.push('/checkout');
   };
 
   return (
@@ -22,6 +24,7 @@ export default function CartPage() {
           <Link href="/" className={homeStyles.logo}>토이팡팡 🎈</Link>
           <nav className={homeStyles.nav}>
             <Link href="/">홈</Link>
+            <Link href="/auth">{user ? `${user.name}님` : '로그인'}</Link>
             <Link href="/cart">장바구니 ({cart.length})</Link>
           </nav>
         </div>
@@ -40,10 +43,12 @@ export default function CartPage() {
             <div className={styles.cartList}>
               {cart.map((item) => (
                 <div key={item.id} className={styles.cartItem}>
-                  <div 
+                  <img 
                     className={styles.itemImage} 
-                    style={{ backgroundColor: item.color }}
-                  ></div>
+                    src={item.imageUrl} 
+                    alt={item.title} 
+                    style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px' }}
+                  />
                   <div className={styles.itemInfo}>
                     <div className={styles.itemName}>{item.title}</div>
                     <div className={styles.itemPrice}>{item.price}원 x {item.quantity}개</div>

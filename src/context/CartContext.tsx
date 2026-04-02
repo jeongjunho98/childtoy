@@ -2,11 +2,12 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-interface CartItem {
+export interface CartItem {
   id: number;
   title: string;
   price: string;
   color: string;
+  imageUrl: string;
   quantity: number;
 }
 
@@ -23,7 +24,6 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
 
-  // 로컬 스토리지에서 장바구니 데이터 불러오기
   useEffect(() => {
     const savedCart = localStorage.getItem('toy_cart');
     if (savedCart) {
@@ -31,7 +31,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // 장바구니 변경 시 로컬 스토리지 저장
   useEffect(() => {
     localStorage.setItem('toy_cart', JSON.stringify(cart));
   }, [cart]);
@@ -44,7 +43,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
         );
       }
-      return [...prev, { ...product, quantity: 1 }];
+      return [...prev, { 
+        id: product.id, 
+        title: product.title, 
+        price: product.price, 
+        color: product.color, 
+        imageUrl: product.imageUrl, 
+        quantity: 1 
+      }];
     });
     alert('장바구니에 담겼습니다! 🛒');
   };

@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import styles from "./page.module.css";
 import { PRODUCTS } from "@/data/products";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
 
 const LiveTimer = () => {
-  const [timeLeft, setTimeLeft] = useState(1800); // 30분 (1800초)
+  const [timeLeft, setTimeLeft] = useState(1800);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -31,6 +33,7 @@ const LiveTimer = () => {
 
 export default function Home() {
   const { addToCart, cart } = useCart();
+  const { user } = useAuth();
 
   return (
     <div className={styles.main}>
@@ -40,7 +43,7 @@ export default function Home() {
           <nav className={styles.nav}>
             <Link href="/">홈</Link>
             <Link href="#">카테고리</Link>
-            <Link href="#">이벤트</Link>
+            <Link href="/auth">{user ? `${user.name}님` : '로그인'}</Link>
             <Link href="/cart">장바구니 ({cart.length})</Link>
           </nav>
         </div>
@@ -62,11 +65,15 @@ export default function Home() {
             <div key={product.id} className={styles.card}>
               {product.tag && <span className={styles.tag}>{product.tag}</span>}
               <Link href={`/products/${product.id}`}>
-                <div 
-                  className={styles.imagePlaceholder} 
-                  style={{ backgroundColor: product.color }}
-                >
-                  {product.title}
+                <div className={styles.imagePlaceholder}>
+                  <Image 
+                    src={product.imageUrl} 
+                    alt={product.title} 
+                    fill
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                    style={{ objectFit: 'cover' }}
+                    priority={product.id <= 3}
+                  />
                 </div>
               </Link>
               <div className={styles.info}>
