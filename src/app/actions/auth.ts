@@ -69,8 +69,15 @@ export async function signupAction(rawData: any) {
 
     const user = await prisma.user.create({
       data: {
-        ...validated,
+        username: validated.username,
         password: hashedPassword,
+        name: validated.name,
+        email: validated.email || '', // undefined 방지
+        phone: validated.phone,
+        zipcode: validated.zipcode,
+        address: validated.address,
+        detailAddress: validated.detailAddress,
+        role: validated.role,
       },
     });
 
