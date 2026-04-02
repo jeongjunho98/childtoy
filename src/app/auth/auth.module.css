@@ -1,108 +1,201 @@
 .container {
-  max-width: 400px;
-  margin: 100px auto;
+  max-width: 500px;
+  margin: 60px auto;
   padding: 40px;
   background: white;
-  border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  border-radius: 30px;
+  box-shadow: 0 20px 60px rgba(162, 210, 255, 0.15);
   text-align: center;
 }
 
-.title {
-  font-size: 28px;
-  color: var(--primary-pink);
-  margin-bottom: 30px;
+/* My Page Style (Coupang/11st like) */
+.myPageBox {
+  text-align: left;
+  margin-top: 30px;
+}
+
+.profileCard {
+  background: linear-gradient(135deg, #f0f8ff 0%, #fff 100%);
+  padding: 30px;
+  border-radius: 20px;
+  border: 2px solid #e1f0ff;
+  margin-bottom: 25px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.avatar {
+  width: 70px;
+  height: 70px;
+  background: var(--toy-blue);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  box-shadow: 0 10px 20px rgba(162, 210, 255, 0.3);
+}
+
+.userBasic h2 {
+  font-size: 24px;
+  font-weight: 900;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+.roleBadge {
+  display: inline-block;
+  padding: 4px 12px;
+  background: #ffafcc;
+  color: white;
+  border-radius: 50px;
+  font-size: 12px;
   font-weight: 800;
 }
 
+.adminBadge {
+  background: #4facfe;
+}
+
+.infoGrid {
+  display: grid;
+  gap: 15px;
+}
+
+.infoItem {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px 20px;
+  background: #fdfbfb;
+  border-radius: 15px;
+  border: 1px solid #f0f0f0;
+}
+
+.infoLabel {
+  font-weight: 800;
+  color: #888;
+  font-size: 14px;
+}
+
+.infoValue {
+  font-weight: 700;
+  color: #444;
+  font-size: 14px;
+}
+
+.logoutBtn {
+  width: 100%;
+  padding: 15px;
+  background: #f5f5f5;
+  color: #666;
+  border: none;
+  border-radius: 50px;
+  font-weight: 800;
+  margin-top: 30px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.logoutBtn:hover {
+  background: #eee;
+}
+
+.deleteBtn {
+  display: block;
+  text-align: center;
+  margin-top: 20px;
+  color: #bbb;
+  font-size: 12px;
+  text-decoration: underline;
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+}
+
+.deleteBtn:hover {
+  color: #ff5252;
+}
+
+/* Original Styles */
 .tabs {
   display: flex;
   margin-bottom: 30px;
-  border-bottom: 2px solid #eee;
+  background: #f5f5f5;
+  padding: 5px;
+  border-radius: 50px;
 }
 
 .tab {
   flex: 1;
-  padding: 10px;
-  font-weight: bold;
-  color: #888;
+  padding: 12px;
+  font-weight: 800;
+  color: #aaa;
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: 50px;
 }
 
 .activeTab {
-  color: var(--primary-blue);
-  border-bottom: 3px solid var(--primary-blue);
+  background: white;
+  color: var(--toy-blue);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.05);
 }
 
 .form {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 12px;
 }
 
 .input {
-  padding: 15px;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  font-size: 16px;
+  padding: 15px 20px;
+  border: 2px solid #f0f0f0;
+  border-radius: 15px;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.input:focus {
+  border-color: var(--toy-blue);
 }
 
 .submitBtn {
-  padding: 15px;
-  background: var(--primary-blue);
+  padding: 18px;
+  background: var(--toy-blue);
   color: white;
-  border-radius: 10px;
-  font-weight: bold;
+  border-radius: 50px;
+  font-weight: 900;
   font-size: 18px;
+  border: none;
+  cursor: pointer;
   margin-top: 10px;
+  box-shadow: 0 10px 20px rgba(162, 210, 255, 0.3);
 }
 
 .socialGroup {
   margin-top: 30px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  padding-top: 30px;
+  border-top: 1px dashed #eee;
 }
 
-.naverBtn {
-  background: #03C75A;
-  color: white;
+.naverBtn, .kakaoBtn {
+  width: 100%;
   padding: 12px;
-  border-radius: 8px;
-  font-weight: bold;
+  border-radius: 12px;
+  font-weight: 800;
+  border: none;
+  cursor: pointer;
+  margin-bottom: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
 }
 
-.kakaoBtn {
-  background: #FEE500;
-  color: #191919;
-  padding: 12px;
-  border-radius: 8px;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-}
-
-.userInfo {
-  margin-top: 30px;
-}
-
-.logoutBtn {
-  background: #eee;
-  color: #666;
-  margin-top: 20px;
-  padding: 10px;
-  border-radius: 8px;
-  font-size: 14px;
-}
-
-.deleteBtn {
-  color: #ff4d4d;
-  font-size: 13px;
-  margin-top: 30px;
-  text-decoration: underline;
-}
+.naverBtn { background: #03C75A; color: white; }
+.kakaoBtn { background: #FEE500; color: #191919; }
