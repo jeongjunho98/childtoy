@@ -92,13 +92,21 @@ function AuthContent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('handleSubmit triggered, isLogin:', isLogin);
     if (isLogin) {
-      const success = await login(username, password);
-      if (success) {
-        alert('로그인 성공! 🎉');
-        router.push('/');
-      } else {
-        alert('아이디 또는 비밀번호가 틀렸거나 사용자를 찾을 수 없습니다.');
+      console.log('Attempting login with:', username);
+      try {
+        const success = await login(username, password);
+        console.log('Login result:', success);
+        if (success) {
+          alert('로그인 성공! 🎉');
+          router.push('/');
+        } else {
+          alert('아이디 또는 비밀번호가 틀렸거나 사용자를 찾을 수 없습니다.');
+        }
+      } catch (err) {
+        console.error('Login error in handleSubmit:', err);
+        alert('로그인 중 시스템 오류가 발생했습니다.');
       }
     } else {
       if (!isSmsVerified) {

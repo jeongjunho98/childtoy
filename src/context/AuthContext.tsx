@@ -47,11 +47,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const login = async (username: string, password: string) => {
-    const dbUser = await loginAction(username, password);
-    if (dbUser) {
-      localStorage.setItem('toy_user', JSON.stringify(dbUser));
-      setUser(dbUser as any);
-      return true;
+    console.log('AuthContext: login attempt for', username);
+    try {
+      const dbUser = await loginAction(username, password);
+      console.log('AuthContext: loginAction returned', dbUser ? 'user' : 'null');
+      if (dbUser) {
+        localStorage.setItem('toy_user', JSON.stringify(dbUser));
+        setUser(dbUser as any);
+        return true;
+      }
+    } catch (err) {
+      console.error('AuthContext: login error', err);
     }
     return false;
   };
