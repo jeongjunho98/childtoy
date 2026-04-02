@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import styles from './auth.module.css';
 import homeStyles from '../page.module.css';
 import { useAuth } from '@/context/AuthContext';
@@ -13,8 +13,11 @@ declare global {
   }
 }
 
-export default function AuthPage() {
-  const [isLogin, setIsLogin] = useState(true);
+function AuthContent() {
+  const searchParams = useSearchParams();
+  const initialMode = searchParams.get('mode') === 'signup' ? false : true;
+  
+  const [isLogin, setIsLogin] = useState(initialMode);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
@@ -24,6 +27,20 @@ export default function AuthPage() {
   const [address, setAddress] = useState('');
   const [detailAddress, setDetailAddress] = useState('');
   
+  // SMS Verification simulation
+  const [smsCode, setSmsCode] = useState('');
+  const [isSmsSent, setIsSmsSent] = useState(false);
+  const [isSmsVerified, setIsSmsVerified] = useState(false);
+
+  const { user, login, signup, logout, deleteAccount } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    const mode = searchParams.get('mode');
+    if (mode === 'signup') setIsLogin(false);
+    else if (mode === 'login') setIsLogin(true);
+  }, [searchParams]);
+
   useEffect(() => {
     // Daum 우편번호 스크립트 로드
     const script = document.createElement('script');
@@ -54,14 +71,6 @@ export default function AuthPage() {
       }
     }).open();
   };
-  
-  // SMS Verification simulation
-  const [smsCode, setSmsCode] = useState('');
-  const [isSmsSent, setIsSmsSent] = useState(false);
-  const [isSmsVerified, setIsSmsVerified] = useState(false);
-
-  const { user, login, signup, logout, deleteAccount } = useAuth();
-  const router = useRouter();
 
   const handleSendSms = () => {
     if (!phone) {
@@ -113,7 +122,7 @@ export default function AuthPage() {
   const handleSocialLogin = (platform: string) => {
     const socialUser = {
       username: `${platform.toLowerCase()}_user`,
-      password: '', // Social login usually doesn't need a local password
+      password: '',
       name: `${platform} 친구`,
       email: `${platform.toLowerCase()}@toy.pang`,
       phone: '010-0000-0000',
@@ -242,8 +251,14 @@ export default function AuthPage() {
             {isSmsVerified && <p style={{ color: 'green', fontSize: '12px', textAlign: 'left' }}>인증이 완료되었습니다.</p>}
             
             <div style={{ display: 'flex', gap: '5px' }}>
-              <input className={styles.input} style={{ flex: 1 }} type="text" placeholder="우편번호" readOnly value="12345" />
-              <button type="button" style={{ padding: '0 10px', background: '#eee', borderRadius: '8px', fontSize: '12px' }}>주소검색</button>
+              <input className={styles.input} style={{ flex: 1 }} type="text" placeholder="우편번호" readOnly value={zipcode} />
+              <button 
+                type="button" 
+                onClick={handleAddressSearch}
+                style={{ padding: '0 15px', background: 'var(--primary-yellow)', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold' }}
+              >
+                주소검색
+              </button>
             </div>
             <input 
               className={styles.input}
@@ -251,9 +266,11 @@ export default function AuthPage() {
               placeholder="기본 주소" 
               value={address}
               onChange={(e) => setAddress(e.target.value)}
+              readOnly
               required
             />
             <input 
+              id="detailAddress"
               className={styles.input}
               type="text" 
               placeholder="상세 주소" 
@@ -278,5 +295,13 @@ export default function AuthPage() {
         </button>
       </div>
     </div>
+  );
+}
+
+export default function AuthPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AuthContent />
+    </Suspense>
   );
 }

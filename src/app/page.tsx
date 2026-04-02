@@ -124,7 +124,7 @@ export default function Home() {
 
   return (
     <div className={styles.main}>
-      {/* Utility Bar */}
+      {/* Utility Bar - 로그인/회원가입 명확히 표시 */}
       <div className={styles.utilityBar}>
         <div className="container" style={{ display: 'flex', justifyContent: 'flex-end', gap: '20px' }}>
           {user ? (
@@ -134,14 +134,15 @@ export default function Home() {
             </>
           ) : (
             <>
-              <Link href="/auth" className={styles.utilityLink}>로그인</Link>
-              <Link href="/auth" className={styles.utilityLink}>회원가입</Link>
+              <Link href="/auth?mode=login" className={styles.utilityLink}>로그인</Link>
+              <Link href="/auth?mode=signup" className={styles.utilityLink}>회원가입</Link>
             </>
           )}
-          <Link href="#" className={styles.utilityLink}>고객센터</Link>
-          <Link href="#" className={styles.utilityLink}>주문배송조회</Link>
+          <Link href="/cs" className={styles.utilityLink}>고객센터</Link>
+          <Link href="/orders" className={styles.utilityLink}>주문배송조회</Link>
         </div>
       </div>
+
 
       {/* Header */}
       <header className={styles.header}>
