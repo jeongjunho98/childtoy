@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo, Suspense } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -98,35 +98,81 @@ export default function Home() {
     { id: 'boardgame', name: '꿀잼 게임', icon: '🎲' },
   ];
 
+  // DB 데이터 가져오기
   useEffect(() => {
     const fetchProducts = async () => {
-      const data = await getProducts();
-      if (data && data.length > 0) setDbProducts(data as any);
-      else setDbProducts(staticProducts);
+      try {
+        const data = await getProducts();
+        if (data && data.length > 0) setDbProducts(data as any);
+        else setDbProducts(staticProducts);
+      } catch (err) {
+        setDbProducts(staticProducts);
+      }
     };
     fetchProducts();
   }, []);
 
+  // 필터링 메인 로직
   const filteredProducts = useMemo(() => {
-    const listToFilter = dbProducts.length > 0 ? dbProducts : staticProducts;
-    let list = [...listToFilter];
+    const base = dbProducts.length > 0 ? dbProducts : staticProducts;
+    let list = [...base];
+
+    // 1. 검색어 적용
     if (searchTerm) {
-      list = list.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()) || p.description.toLowerCase().includes(searchTerm.toLowerCase()));
+      list = list.filter(p => 
+        p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        p.description.toLowerCase().includes(searchTerm.toLowerCase())
+      );
     }
-    if (specialFilter === 'pangpang') list = list.filter(p => p.isPangPang);
-    else if (specialFilter === 'best') list = list.sort((a, b) => b.reviewCount - a.reviewCount).slice(0, 12);
-    else if (specialFilter === 'sale') list = list.filter(p => p.originalPrice && (p.originalPrice > p.price));
-    if (selectedCategory !== 'all') list = list.filter(p => p.category === selectedCategory);
+
+    // 2. 특수 필터 적용
+    if (specialFilter === 'pangpang') {
+      list = list.filter(p => p.isPangPang);
+    } else if (specialFilter === 'best') {
+      list = list.sort((a, b) => b.reviewCount - a.reviewCount).slice(0, 16);
+    } else if (specialFilter === 'sale') {
+      list = list.filter(p => p.originalPrice && (p.originalPrice > p.price));
+    }
+
+    // 3. 카테고리 적용
+    if (selectedCategory !== 'all') {
+      list = list.filter(p => p.category === selectedCategory);
+    }
+
     return list;
   }, [dbProducts, selectedCategory, specialFilter, searchTerm]);
+
+  // 핸들러 함수들
+  const handleCategorySelect = (id: string) => {
+    setSearchTerm('');
+    setSpecialFilter(null);
+    setSelectedCategory(id);
+    setIsCategoryOpen(false);
+    setTimeout(() => productListRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+  };
+
+  const handleSpecialFilter = (filter: string) => {
+    setSearchTerm('');
+    setSelectedCategory('all');
+    setSpecialFilter(filter);
+    setTimeout(() => productListRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+  };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setSpecialFilter(null);
     setSelectedCategory('all');
-    productListRef.current?.scrollIntoView({ behavior: 'smooth' });
+    setTimeout(() => productListRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
   };
 
+  const resetAll = () => {
+    setSearchTerm('');
+    setSpecialFilter(null);
+    setSelectedCategory('all');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // 외부 클릭 닫기
   useEffect(() => {
     const clickOutside = (e: MouseEvent) => {
       if (categoryRef.current && !categoryRef.current.contains(e.target as Node)) setIsCategoryOpen(false);
@@ -149,9 +195,15 @@ export default function Home() {
       <header className={styles.header}>
         <div className="container">
           <div className={styles.headerContent}>
-            <div onClick={() => { setSearchTerm(''); setSpecialFilter(null); setSelectedCategory('all'); window.scrollTo(0,0); }} className={styles.logo}>토이팡팡 🎈</div>
+            <div onClick={resetAll} className={styles.logo}>토이팡팡 🎈</div>
             <form className={styles.searchBar} onSubmit={handleSearch}>
-              <input type="text" className={styles.searchInput} placeholder="검색어 입력 (예: 카봇, 티니핑)" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+              <input 
+                type="text" 
+                className={styles.searchInput} 
+                placeholder="검색어 입력 (예: 카봇, 티니핑)" 
+                value={searchTerm} 
+                onChange={(e) => setSearchTerm(e.target.value)} 
+              />
               <button type="submit" className={styles.searchBtn}>🔍</button>
             </form>
             <div className={styles.headerIcons}>
@@ -176,17 +228,17 @@ export default function Home() {
               <div className={styles.categoryBtn} onClick={() => setIsCategoryOpen(!isCategoryOpen)}>🌈 카테고리</div>
               {isCategoryOpen && (
                 <div className={styles.categoryDropdown}>
-                  <div className={styles.categoryItem} onClick={() => { setSelectedCategory('all'); setIsCategoryOpen(false); }}>✨ 모두보기</div>
+                  <div className={styles.categoryItem} onClick={() => handleCategorySelect('all')}>✨ 모두보기</div>
                   {categories.map(cat => (
-                    <div key={cat.id} className={styles.categoryItem} onClick={() => { setSelectedCategory(cat.id); setSpecialFilter(null); setIsCategoryOpen(false); }}>{cat.icon} {cat.name}</div>
+                    <div key={cat.id} className={styles.categoryItem} onClick={() => handleCategorySelect(cat.id)}>{cat.icon} {cat.name}</div>
                   ))}
                 </div>
               )}
             </div>
-            <button className={`${styles.navItem} ${specialFilter === 'pangpang' ? styles.activeNavItem : ''}`} onClick={() => { setSpecialFilter('pangpang'); setSelectedCategory('all'); }}>팡팡배송 🚀</button>
+            <button className={`${styles.navItem} ${specialFilter === 'pangpang' ? styles.activeNavItem : ''}`} onClick={() => handleSpecialFilter('pangpang')}>팡팡배송 🚀</button>
             <button className={styles.navItem} onClick={() => goldBoxRef.current?.scrollIntoView({behavior:'smooth'})}>황금상자</button>
-            <button className={`${styles.navItem} ${specialFilter === 'best' ? styles.activeNavItem : ''}`} onClick={() => { setSpecialFilter('best'); setSelectedCategory('all'); }}>인기짱!</button>
-            <button className={`${styles.navItem} ${specialFilter === 'sale' ? styles.activeNavItem : ''}`} onClick={() => { setSpecialFilter('sale'); setSelectedCategory('all'); }}>반값파티</button>
+            <button className={`${styles.navItem} ${specialFilter === 'best' ? styles.activeNavItem : ''}`} onClick={() => handleSpecialFilter('best')}>인기짱!</button>
+            <button className={`${styles.navItem} ${specialFilter === 'sale' ? styles.activeNavItem : ''}`} onClick={() => handleSpecialFilter('sale')}>반값파티</button>
           </div>
         </div>
       </nav>
@@ -201,12 +253,19 @@ export default function Home() {
 
         <div className={styles.quickMenu}>
           {categories.map(cat => (
-            <button key={cat.id} className={`${styles.menuItem} ${selectedCategory === cat.id ? styles.activeMenu : ''}`} onClick={() => { setSelectedCategory(cat.id); setSpecialFilter(null); }}>
+            <button 
+              key={cat.id} 
+              className={`${styles.menuItem} ${selectedCategory === cat.id ? styles.activeMenu : ''}`} 
+              onClick={() => handleCategorySelect(cat.id)}
+            >
               <div className={styles.menuIcon}>{cat.icon}</div>
               <span>{cat.name}</span>
             </button>
           ))}
-          <button className={`${styles.menuItem} ${selectedCategory === 'all' && !specialFilter && !searchTerm ? styles.activeMenu : ''}`} onClick={() => { setSelectedCategory('all'); setSpecialFilter(null); setSearchTerm(''); }}>
+          <button 
+            className={`${styles.menuItem} ${selectedCategory === 'all' && !specialFilter && !searchTerm ? styles.activeMenu : ''}`} 
+            onClick={() => handleCategorySelect('all')}
+          >
             <div className={styles.menuIcon}>🎈</div>
             <span>모두보기</span>
           </button>
@@ -241,7 +300,7 @@ export default function Home() {
             ) : (
               <div className={styles.noResult}>
                 <p>찾으시는 장난감이 없어요.. 😢</p>
-                <button onClick={() => {setSearchTerm(''); setSelectedCategory('all');}} className={styles.resetBtn}>전체 상품 보기</button>
+                <button onClick={resetAll} className={styles.resetBtn}>전체 상품 보기</button>
               </div>
             )}
           </div>
