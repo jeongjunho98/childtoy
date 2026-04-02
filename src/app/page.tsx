@@ -260,7 +260,7 @@ export default function Home() {
             <div className={styles.footerRight} style={{ textAlign: 'right' }}>
               <div className={styles.csCenter}>
                 <h3 style={{ fontSize: '20px', marginBottom: '10px' }}>도움이 필요하신가요?</h3>
-                <div className={styles.csNumber}>1588-1234</div>
+                <div className={styles.csNumber}>010-4851-7984</div>
                 <p>친구들의 웃음을 위해 언제나 열려있어요!</p>
               </div>
             </div>

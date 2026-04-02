@@ -27,7 +27,7 @@ export default function CustomerServicePage() {
             </div>
             <div className={styles.item}>
               <h3>전화 상담</h3>
-              <p className={homeStyles.csNumber}>1588-1234</p>
+              <p className={homeStyles.csNumber}>010-4851-7984</p>
               <p>평일 09:00 ~ 18:00</p>
             </div>
           </div>
