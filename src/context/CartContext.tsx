@@ -47,12 +47,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         id: product.id, 
         title: product.title, 
         price: product.price, 
-        color: product.color, 
+        color: product.color || '', 
         imageUrl: product.imageUrl, 
         quantity: 1 
       }];
     });
-    alert('장바구니에 담겼습니다! 🛒');
   };
 
   const removeFromCart = (id: number) => {

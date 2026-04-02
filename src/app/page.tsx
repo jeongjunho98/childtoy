@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
 import { products, Product } from "@/data/products";
 import { useCart } from "@/context/CartContext";
@@ -28,12 +29,40 @@ const FlashTimer = () => {
 };
 
 const ProductCard = ({ product }: { product: Product }) => {
+  const { addToCart } = useCart();
+  const router = useRouter();
   const discountRate = product.originalPrice 
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) 
     : 0;
 
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addToCart({
+      id: parseInt(product.id),
+      title: product.name,
+      price: product.price.toLocaleString(),
+      imageUrl: product.image,
+      description: product.description
+    });
+    alert('장바구니에 담겼습니다! 🛒');
+  };
+
+  const handleBuyNow = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addToCart({
+      id: parseInt(product.id),
+      title: product.name,
+      price: product.price.toLocaleString(),
+      imageUrl: product.image,
+      description: product.description
+    });
+    router.push('/checkout');
+  };
+
   return (
-    <Link href={`/products/${product.id}`} className={styles.card}>
+    <div className={styles.card} onClick={() => router.push(`/products/${product.id}`)} style={{ cursor: 'pointer' }}>
       <div className={styles.imageArea}>
         <img src={product.image} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
       </div>
@@ -53,8 +82,12 @@ const ProductCard = ({ product }: { product: Product }) => {
           <span className={styles.stars}>{"★".repeat(Math.floor(product.rating))}</span>
           <span className={styles.reviewCount}>({product.reviewCount.toLocaleString()}명의 친구들)</span>
         </div>
+        <div style={{ display: 'flex', gap: '5px', marginTop: '15px' }}>
+          <button onClick={handleAddToCart} style={{ flex: 1, padding: '8px', borderRadius: '10px', background: '#f0f0f0', border: 'none', fontSize: '12px', fontWeight: 'bold' }}>장바구니</button>
+          <button onClick={handleBuyNow} style={{ flex: 1, padding: '8px', borderRadius: '10px', background: 'var(--toy-blue)', color: 'white', border: 'none', fontSize: '12px', fontWeight: 'bold' }}>바로구매</button>
+        </div>
       </div>
-    </Link>
+    </div>
   );
 };
 
@@ -77,7 +110,6 @@ export default function Home() {
     { id: 'boardgame', name: '꿀잼 게임', icon: '🎲' },
   ];
 
-  // 필터링 로직 개선
   let filteredProducts = [...products];
   if (specialFilter === 'pangpang') {
     filteredProducts = products.filter(p => p.isPangPang);

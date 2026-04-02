@@ -60,9 +60,30 @@ export default function ProductDetail() {
     return <div className="container">상품을 찾을 수 없습니다.</div>;
   }
 
+  const handleAddToCart = () => {
+    addToCart({
+      id: parseInt(product.id),
+      title: product.name,
+      price: product.price.toLocaleString(),
+      imageUrl: product.image,
+      description: product.description
+    });
+    alert('장바구니에 담겼습니다! 🛒');
+  };
+
+  const handleBuyNow = () => {
+    addToCart({
+      id: parseInt(product.id),
+      title: product.name,
+      price: product.price.toLocaleString(),
+      imageUrl: product.image,
+      description: product.description
+    });
+    router.push('/checkout');
+  };
+
   return (
     <div className={homeStyles.main}>
-      {/* Utility Bar */}
       <div className={homeStyles.utilityBar}>
         <div className="container" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
           {user && <span style={{ fontWeight: '800', color: '#555', fontSize: '12px' }}>✨ {user.name} 친구, 반가워요!</span>}
@@ -72,7 +93,6 @@ export default function ProductDetail() {
         </div>
       </div>
 
-      {/* Improved Header */}
       <header className={homeStyles.header}>
         <div className="container">
           <div className={homeStyles.headerContent}>
@@ -111,31 +131,10 @@ export default function ProductDetail() {
             <p className={styles.description}>{product.description}</p>
             
             <div className={styles.btnGroup}>
-              <button 
-                className={styles.cartBtn}
-                onClick={() => addToCart({
-                  id: parseInt(product.id),
-                  title: product.name,
-                  price: product.price.toLocaleString(),
-                  imageUrl: product.image,
-                  description: product.description
-                })}
-              >
+              <button className={styles.cartBtn} onClick={handleAddToCart}>
                 장바구니 담기
               </button>
-              <button 
-                className={styles.buyBtn}
-                onClick={() => {
-                  addToCart({
-                    id: parseInt(product.id),
-                    title: product.name,
-                    price: product.price.toLocaleString(),
-                    imageUrl: product.image,
-                    description: product.description
-                  });
-                  router.push('/checkout');
-                }}
-              >
+              <button className={styles.buyBtn} onClick={handleBuyNow}>
                 바로 구매하기
               </button>
             </div>
