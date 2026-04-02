@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -12,21 +12,16 @@ import { getProducts } from "./actions/product";
 
 const FlashTimer = () => {
   const [timeLeft, setTimeLeft] = useState(14400);
-
   useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
+    const timer = setInterval(() => setTimeLeft(p => p > 0 ? p - 1 : 0), 1000);
     return () => clearInterval(timer);
   }, []);
-
-  const formatTime = (seconds: number) => {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = seconds % 60;
-    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  const formatTime = (s: number) => {
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    const sec = s % 60;
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
   };
-
   return <span className={styles.timer}>⏰ {formatTime(timeLeft)}</span>;
 };
 
@@ -45,15 +40,14 @@ const ProductCard = ({ product }: { product: Product }) => {
           alt={product.name} 
           fill 
           sizes="(max-width: 768px) 50vw, 20vw"
+          style={{ objectFit: 'cover' }}
           className={styles.optimizedImage}
         />
       </div>
       <div className={styles.info}>
         <h3 className={styles.productTitle}>{product.name}</h3>
         <div className={styles.priceArea}>
-          {product.originalPrice && (
-            <div className={styles.originalPrice}>{product.originalPrice.toLocaleString()}원</div>
-          )}
+          {product.originalPrice && <div className={styles.originalPrice}>{product.originalPrice.toLocaleString()}원</div>}
           <div className={styles.discountArea}>
             {discountRate > 0 && <span className={styles.discountRate}>{discountRate}%</span>}
             <span className={styles.currentPrice}>{product.price.toLocaleString()}원</span>
@@ -116,23 +110,13 @@ export default function Home() {
   const filteredProducts = useMemo(() => {
     const listToFilter = dbProducts.length > 0 ? dbProducts : staticProducts;
     let list = [...listToFilter];
-    
-    // 1. 검색어 필터
     if (searchTerm) {
-      list = list.filter(p => 
-        p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        p.description.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      list = list.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()) || p.description.toLowerCase().includes(searchTerm.toLowerCase()));
     }
-
-    // 2. 특수 필터
     if (specialFilter === 'pangpang') list = list.filter(p => p.isPangPang);
     else if (specialFilter === 'best') list = list.sort((a, b) => b.reviewCount - a.reviewCount).slice(0, 12);
     else if (specialFilter === 'sale') list = list.filter(p => p.originalPrice && (p.originalPrice > p.price));
-    
-    // 3. 카테고리 필터
     if (selectedCategory !== 'all') list = list.filter(p => p.category === selectedCategory);
-    
     return list;
   }, [dbProducts, selectedCategory, specialFilter, searchTerm]);
 
@@ -143,11 +127,19 @@ export default function Home() {
     productListRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  useEffect(() => {
+    const clickOutside = (e: MouseEvent) => {
+      if (categoryRef.current && !categoryRef.current.contains(e.target as Node)) setIsCategoryOpen(false);
+    };
+    document.addEventListener("mousedown", clickOutside);
+    return () => document.removeEventListener("mousedown", clickOutside);
+  }, []);
+
   return (
     <div className={styles.main}>
       <div className={styles.utilityBar}>
         <div className="container" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-          {user && <span className={styles.welcomeMsg}>✨ {user.name} 친구 반가워요!</span>}
+          <span className={styles.welcomeMsg}>{user ? `✨ ${user.name} 친구 반가워요!` : '반가워요! 로그인을 해주세요'}</span>
           <Link href="/cs" className={styles.utilityLink}>고객센터</Link>
           <Link href="/orders" className={styles.utilityLink}>배송조회</Link>
           {user && <button onClick={logout} className={styles.utilityLink}>로그아웃</button>}
@@ -159,13 +151,7 @@ export default function Home() {
           <div className={styles.headerContent}>
             <div onClick={() => { setSearchTerm(''); setSpecialFilter(null); setSelectedCategory('all'); window.scrollTo(0,0); }} className={styles.logo}>토이팡팡 🎈</div>
             <form className={styles.searchBar} onSubmit={handleSearch}>
-              <input 
-                type="text" 
-                className={styles.searchInput} 
-                placeholder="검색어 입력 (예: 카봇, 티니핑)" 
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+              <input type="text" className={styles.searchInput} placeholder="검색어 입력 (예: 카봇, 티니핑)" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
               <button type="submit" className={styles.searchBtn}>🔍</button>
             </form>
             <div className={styles.headerIcons}>
@@ -208,7 +194,7 @@ export default function Home() {
       <main className="container">
         <section className={styles.hero}>
           <div className={styles.heroContent}>
-            <h1 className={styles.heroTitle}>장난감 천국 토이팡팡! 🏰</h1>
+            <h1 className={styles.heroTitle}>우리 아이를 위한 특별한 선물 🏰</h1>
             <p className={styles.heroSubtitle}>품격 있는 고퀄리티 장난감을 만나보세요 ✨</p>
           </div>
         </section>
