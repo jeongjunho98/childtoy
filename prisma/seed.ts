@@ -1,4 +1,6 @@
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcrypt';
+
 const prisma = new PrismaClient();
 
 const productsData = [
@@ -32,7 +34,9 @@ const productsData = [
 async function main() {
   console.log('Seeding admin user...');
   
-  // 기존 'admin' 계정 삭제 (선택 사항, 여기서는 새로운 관리자 계정 생성으로 대체)
+  const hashedPassword = await bcrypt.hash('toypangpang2026', 10);
+
+  // 기존 'admin' 계정 삭제
   await prisma.user.deleteMany({
     where: { username: 'admin' }
   });
@@ -40,11 +44,11 @@ async function main() {
   await prisma.user.upsert({
     where: { username: 'toypangpangadmin' },
     update: {
-      password: 'toypangpang2026'
+      password: hashedPassword
     },
     create: {
       username: 'toypangpangadmin',
-      password: 'toypangpang2026',
+      password: hashedPassword,
       name: '토이팡팡관리자',
       email: 'admin@toypang.com',
       phone: '010-4851-7984',
