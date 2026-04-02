@@ -1,0 +1,87 @@
+.container {
+  max-width: 800px;
+  margin: 50px auto;
+  padding: 0 20px;
+}
+
+.title {
+  font-size: 28px;
+  margin-bottom: 30px;
+  border-bottom: 3px solid var(--primary-yellow);
+  padding-bottom: 10px;
+  display: inline-block;
+}
+
+.cartList {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.cartItem {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  background: #fdfdfd;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.itemImage {
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  margin-right: 20px;
+}
+
+.itemInfo {
+  flex: 1;
+}
+
+.itemName {
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.itemPrice {
+  color: #888;
+}
+
+.removeBtn {
+  padding: 8px 12px;
+  background: #eee;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.totalSection {
+  margin-top: 40px;
+  padding: 30px;
+  background: #f0faff;
+  border-radius: 15px;
+  text-align: right;
+}
+
+.totalPrice {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--primary-pink);
+  margin-left: 10px;
+}
+
+.checkoutBtn {
+  margin-top: 20px;
+  width: 100%;
+  padding: 18px;
+  background: var(--primary-blue);
+  color: white;
+  font-size: 20px;
+  font-weight: bold;
+  border-radius: 10px;
+}
+
+.emptyMsg {
+  text-align: center;
+  padding: 100px 0;
+  color: #bbb;
+}
