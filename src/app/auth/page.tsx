@@ -85,8 +85,8 @@ function AuthContent() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isLoading) return;
-    
     setIsLoading(true);
+    
     try {
       if (isLogin) {
         const success = await login(username, password);
@@ -109,12 +109,11 @@ function AuthContent() {
           alert('회원가입 성공! 🎉');
           router.push('/');
         } else {
-          alert('가입에 실패했습니다. 아이디 중복을 확인해주세요.');
+          alert('이미 가입된 아이디이거나 입력 정보가 올바르지 않습니다.');
         }
       }
     } catch (err) {
-      console.error(err);
-      alert('처리 중 오류가 발생했습니다.');
+      alert('처리 중 시스템 오류가 발생했습니다.');
     } finally {
       setIsLoading(false);
     }
@@ -123,29 +122,30 @@ function AuthContent() {
   const handleSocialLogin = async (platform: string) => {
     if (isLoading) return;
     setIsLoading(true);
-    console.log(`${platform} login start...`);
+    
     try {
+      // 간편 로그인 시뮬레이션 데이터 준비
       const socialUser = {
-        username: `${platform.toLowerCase()}_user_${Date.now()}`,
-        password: '', 
+        username: `${platform.toLowerCase()}_user_ Pang`, // 고유 아이디 유지
+        password: '', // 소셜 가입은 비밀번호 없음
         name: `${platform} 친구`,
-        email: `${platform.toLowerCase()}@toy.pang`,
+        email: `${platform.toLowerCase()}@toypang.com`,
         phone: '010-0000-0000',
         zipcode: '12345',
         address: '서울시 어딘가',
-        detailAddress: '간편 가입 회원',
+        detailAddress: '간편 로그인 회원',
         role: 'USER'
       };
+
       const success = await signup(socialUser);
       if (success) {
         alert(`${platform} 계정으로 로그인되었습니다! 🎈`);
         router.push('/');
       } else {
-        alert(`${platform} 로그인에 실패했습니다.`);
+        alert(`${platform} 로그인 처리에 실패했습니다. 다시 시도해 주세요.`);
       }
     } catch (err) {
-      console.error(err);
-      alert('간편 로그인 중 오류가 발생했습니다.');
+      alert(`${platform} 연동 중 오류가 발생했습니다.`);
     } finally {
       setIsLoading(false);
     }
