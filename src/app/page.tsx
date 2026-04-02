@@ -29,7 +29,7 @@ const FlashTimer = () => {
 };
 
 const ProductCard = ({ product }: { product: Product }) => {
-  const { addToCart } = useCart();
+  const { addToCart, setDirectBuy } = useCart();
   const router = useRouter();
   const discountRate = product.originalPrice 
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) 
@@ -51,7 +51,7 @@ const ProductCard = ({ product }: { product: Product }) => {
   const handleBuyNow = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart({
+    setDirectBuy({
       id: parseInt(product.id),
       title: product.name,
       price: product.price.toLocaleString(),
@@ -111,7 +111,6 @@ export default function Home() {
     { id: 'boardgame', name: '꿀잼 게임', icon: '🎲' },
   ];
 
-  // 필터링된 상품 목록 계산 (useMemo 사용으로 최적화 및 정확성 보장)
   const filteredProducts = useMemo(() => {
     let list = [...products];
     

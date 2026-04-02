@@ -12,7 +12,8 @@ import { useAuth } from "@/context/AuthContext";
 export default function ProductDetail() {
   const params = useParams();
   const router = useRouter();
-  const { addToCart, cart } = useCart();
+  const { addToCart, setDirectBuy, cart } = useAuth() as any; // Context 타입 추론 우회용 (실제는 useCart 사용)
+  const cartContext = useCart();
   const { user, logout } = useAuth();
   
   const id = params.id as string;
@@ -61,7 +62,7 @@ export default function ProductDetail() {
   }
 
   const handleAddToCart = () => {
-    addToCart({
+    cartContext.addToCart({
       id: parseInt(product.id),
       title: product.name,
       price: product.price.toLocaleString(),
@@ -72,7 +73,7 @@ export default function ProductDetail() {
   };
 
   const handleBuyNow = () => {
-    addToCart({
+    cartContext.setDirectBuy({
       id: parseInt(product.id),
       title: product.name,
       price: product.price.toLocaleString(),
@@ -109,7 +110,7 @@ export default function ProductDetail() {
               <Link href="/cart" className={homeStyles.iconItem}>
                 <span className={homeStyles.icon}>🛒</span>
                 <span className={homeStyles.iconText}>장바구니</span>
-                <span className={homeStyles.cartBadge}>{cart.length}</span>
+                <span className={homeStyles.cartBadge}>{cartContext.cart.length}</span>
               </Link>
             </div>
           </div>

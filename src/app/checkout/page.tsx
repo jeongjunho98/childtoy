@@ -15,7 +15,7 @@ declare global {
 }
 
 export default function CheckoutPage() {
-  const { cart, totalPrice } = useCart();
+  const { cart, directBuyItem, totalPrice, clearDirectBuy } = useCart();
   const { user } = useAuth();
   const router = useRouter();
 
@@ -37,7 +37,12 @@ export default function CheckoutPage() {
       setAddress(user.address);
       setDetailAddress(user.detailAddress);
     }
-  }, [user]);
+
+    // 페이지를 벗어날 때 단독 구매 상태 초기화
+    return () => {
+      clearDirectBuy();
+    };
+  }, [user, clearDirectBuy]);
 
   const handleAddressSearch = () => {
     new window.daum.Postcode({
@@ -64,7 +69,6 @@ export default function CheckoutPage() {
 
   const handlePay = (e: React.FormEvent) => {
     e.preventDefault();
-    if (cart.length === 0) return;
     
     const methodNames: Record<string, string> = {
       card: '카드 결제',
@@ -80,17 +84,20 @@ export default function CheckoutPage() {
     }, 1500);
   };
 
-  if (cart.length === 0) {
+  // 구매 대상 결정: 단독 구매 상품이 있으면 단독 구매, 없으면 장바구니 전체
+  const itemsToBuy = directBuyItem ? [directBuyItem] : cart;
+
+  if (itemsToBuy.length === 0) {
     return (
       <div className={styles.container} style={{ textAlign: 'center' }}>
-        <h1 className={styles.title}>장바구니가 비어있어요!</h1>
-        <Link href="/" style={{ color: 'var(--primary-blue)' }}>장난감 구경하러 가기</Link>
+        <h1 className={styles.title}>결제할 상품이 없어요!</h1>
+        <Link href="/" style={{ color: 'var(--toy-blue)', fontWeight: 'bold' }}>장난감 구경하러 가기</Link>
       </div>
     );
   }
 
   return (
-    <div>
+    <div className={homeStyles.main}>
       <header className={homeStyles.header}>
         <div className="container" style={{ display: 'flex', justifyContent: 'center', width: '100%', alignItems: 'center' }}>
           <Link href="/" className={homeStyles.logo}>토이팡팡 🎈</Link>
@@ -102,7 +109,21 @@ export default function CheckoutPage() {
 
         <form className={styles.form} onSubmit={handlePay}>
           <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>1. 배송 정보</h2>
+            <h2 className={styles.sectionTitle}>1. 주문 상품 정보</h2>
+            <div style={{ padding: '15px', background: '#f9f9f9', borderRadius: '15px', marginBottom: '20px' }}>
+              {itemsToBuy.map(item => (
+                <div key={item.id} style={{ display: 'flex', gap: '15px', marginBottom: '10px', alignItems: 'center' }}>
+                  <img src={item.imageUrl} alt={item.title} style={{ width: '50px', height: '50px', borderRadius: '10px', objectFit: 'cover' }} />
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontWeight: 'bold', fontSize: '14px' }}>{item.title}</p>
+                    <p style={{ fontSize: '12px', color: '#888' }}>{item.quantity}개 / {item.price}원</p>
+                  </div>
+                </div>
+              ))}
+              {directBuyItem && <p style={{ fontSize: '12px', color: 'var(--toy-pink)', fontWeight: 'bold' }}>* 바로 구매 상품입니다 (장바구니 미포함)</p>}
+            </div>
+
+            <h2 className={styles.sectionTitle}>2. 배송 정보</h2>
             <div className={styles.form}>
               <input 
                 className={styles.input} 
@@ -124,7 +145,7 @@ export default function CheckoutPage() {
                 <button 
                   type="button" 
                   onClick={handleAddressSearch}
-                  style={{ padding: '0 15px', background: 'var(--primary-yellow)', borderRadius: '8px', fontWeight: 'bold' }}
+                  style={{ padding: '0 15px', background: 'var(--toy-yellow)', borderRadius: '10px', fontWeight: 'bold' }}
                 >
                   주소검색
                 </button>
@@ -162,7 +183,7 @@ export default function CheckoutPage() {
           </section>
 
           <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>2. 결제 수단</h2>
+            <h2 className={styles.sectionTitle}>3. 결제 수단</h2>
             <div className={styles.paymentGrid}>
               <label className={`${styles.paymentOption} ${paymentMethod === 'card' ? styles.activePayment : ''}`}>
                 <input type="radio" name="pay" value="card" checked={paymentMethod === 'card'} onChange={() => setPaymentMethod('card')} />
@@ -214,7 +235,7 @@ export default function CheckoutPage() {
               <span>배송비</span>
               <span>3,000원</span>
             </div>
-            <div className={styles.summaryRow} style={{ fontWeight: 'bold', fontSize: '20px', color: 'var(--primary-pink)', marginTop: '10px' }}>
+            <div className={styles.summaryRow} style={{ fontWeight: 'bold', fontSize: '20px', color: 'var(--toy-pink)', marginTop: '10px' }}>
               <span>최종 결제 금액</span>
               <span>{(totalPrice + 3000).toLocaleString()}원</span>
             </div>
