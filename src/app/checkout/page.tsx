@@ -77,8 +77,14 @@ export default function CheckoutPage() {
                 required 
               />
               <div style={{ display: 'flex', gap: '5px' }}>
-                <input className={styles.input} style={{ flex: 1 }} type="text" placeholder="우편번호" readOnly value="12345" />
-                <button type="button" style={{ padding: '0 15px', background: '#eee', borderRadius: '8px' }}>주소검색</button>
+                <input className={styles.input} style={{ flex: 1 }} type="text" placeholder="우편번호" readOnly value={zipcode} />
+                <button 
+                  type="button" 
+                  onClick={handleAddressSearch}
+                  style={{ padding: '0 15px', background: 'var(--primary-yellow)', borderRadius: '8px', fontWeight: 'bold' }}
+                >
+                  주소검색
+                </button>
               </div>
               <input 
                 className={styles.input} 
@@ -86,9 +92,11 @@ export default function CheckoutPage() {
                 placeholder="기본 주소" 
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
+                readOnly
                 required 
               />
               <input 
+                id="detailAddress"
                 className={styles.input} 
                 type="text" 
                 placeholder="상세 주소 (아파트/동/호수 등)" 
@@ -149,6 +157,35 @@ export default function CheckoutPage() {
               <div className={styles.bankInfo}>
                 <p>입금 계좌: <strong>국민은행 123456-01-789101</strong></p>
                 <p>예금주: <strong>(주)토이팡팡</strong></p>
+                <p style={{ fontSize: '12px', color: '#888', marginTop: '5px' }}>* 주문 후 24시간 이내에 입금해주셔야 주문이 완료됩니다.</p>
+              </div>
+            )}
+          </section>
+
+          <div className={styles.summary}>
+            <div className={styles.summaryRow}>
+              <span>총 상품 금액</span>
+              <span>{totalPrice.toLocaleString()}원</span>
+            </div>
+            <div className={styles.summaryRow}>
+              <span>배송비</span>
+              <span>3,000원</span>
+            </div>
+            <div className={styles.summaryRow} style={{ fontWeight: 'bold', fontSize: '20px', color: 'var(--primary-pink)', marginTop: '10px' }}>
+              <span>최종 결제 금액</span>
+              <span>{(totalPrice + 3000).toLocaleString()}원</span>
+            </div>
+          </div>
+
+          <button className={styles.payBtn} type="submit">
+            {(totalPrice + 3000).toLocaleString()}원 결제하기
+          </button>
+        </form>
+      </main>
+    </div>
+  );
+}
+�팡팡</strong></p>
                 <p style={{ fontSize: '12px', color: '#888', marginTop: '5px' }}>* 주문 후 24시간 이내에 입금해주셔야 주문이 완료됩니다.</p>
               </div>
             )}

@@ -1,11 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import styles from './auth.module.css';
 import homeStyles from '../page.module.css';
 import { useAuth } from '@/context/AuthContext';
+
+declare global {
+  interface Window {
+    daum: any;
+  }
+}
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -14,8 +20,40 @@ export default function AuthPage() {
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
+  const [zipcode, setZipcode] = useState('');
   const [address, setAddress] = useState('');
   const [detailAddress, setDetailAddress] = useState('');
+  
+  useEffect(() => {
+    // Daum 우편번호 스크립트 로드
+    const script = document.createElement('script');
+    script.src = '//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
+    script.async = true;
+    document.head.appendChild(script);
+  }, []);
+
+  const handleAddressSearch = () => {
+    new window.daum.Postcode({
+      oncomplete: function(data: any) {
+        let fullAddress = data.address;
+        let extraAddress = '';
+
+        if (data.addressType === 'R') {
+          if (data.bname !== '') {
+            extraAddress += data.bname;
+          }
+          if (data.buildingName !== '') {
+            extraAddress += (extraAddress !== '' ? `, ${data.buildingName}` : data.buildingName);
+          }
+          fullAddress += (extraAddress !== '' ? ` (${extraAddress})` : '');
+        }
+
+        setZipcode(data.zonecode);
+        setAddress(fullAddress);
+        document.getElementById('detailAddress')?.focus();
+      }
+    }).open();
+  };
   
   // SMS Verification simulation
   const [smsCode, setSmsCode] = useState('');
