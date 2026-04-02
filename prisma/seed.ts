@@ -31,13 +31,21 @@ const productsData = [
 
 async function main() {
   console.log('Seeding admin user...');
+  
+  // 기존 'admin' 계정 삭제 (선택 사항, 여기서는 새로운 관리자 계정 생성으로 대체)
+  await prisma.user.deleteMany({
+    where: { username: 'admin' }
+  });
+
   await prisma.user.upsert({
-    where: { username: 'admin' },
-    update: {},
+    where: { username: 'toypangpangadmin' },
+    update: {
+      password: 'toypangpang2026'
+    },
     create: {
-      username: 'admin',
-      password: 'admin1234', // 실제 운영 시에는 반드시 해싱 필요
-      name: '관리자',
+      username: 'toypangpangadmin',
+      password: 'toypangpang2026',
+      name: '토이팡팡관리자',
       email: 'admin@toypang.com',
       phone: '010-4851-7984',
       address: '전라남도 나주시 중야1길 37',
