@@ -5,23 +5,40 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import styles from "./product.module.css";
 import homeStyles from "../../page.module.css";
-import { products, Review } from "@/data/products";
+import { products as staticProducts, Review } from "@/data/products";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
+import { getProductById } from "@/app/actions/product";
 
 export default function ProductDetail() {
   const params = useParams();
   const router = useRouter();
-  const { addToCart, setDirectBuy, cart } = useAuth() as any; // Context 타입 추론 우회용 (실제는 useCart 사용)
-  const cartContext = useCart();
+  const { addToCart, setDirectBuy, cart } = useCart();
   const { user, logout } = useAuth();
   
   const id = params.id as string;
-  const product = products.find((p) => p.id === id);
+  const [product, setProduct] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   const [reviews, setReviews] = useState<Review[]>([]);
   const [newReviewContent, setNewReviewContent] = useState('');
   const [rating, setRating] = useState(5);
+
+  useEffect(() => {
+    const fetchProduct = async () => {
+      setLoading(true);
+      const data = await getProductById(id);
+      if (data) {
+        setProduct(data);
+      } else {
+        // DB에 없으면 정적 데이터에서 찾기
+        const staticP = staticProducts.find(p => p.id === id);
+        setProduct(staticP);
+      }
+      setLoading(false);
+    };
+    fetchProduct();
+  }, [id]);
 
   useEffect(() => {
     if (product) {
@@ -57,13 +74,17 @@ export default function ProductDetail() {
     alert('리뷰가 등록되었습니다! ✨');
   };
 
+  if (loading) {
+    return <div className="container" style={{ padding: '100px 0', textAlign: 'center' }}>상품 정보를 불러오는 중입니다... 🎈</div>;
+  }
+
   if (!product) {
-    return <div className="container">상품을 찾을 수 없습니다.</div>;
+    return <div className="container" style={{ padding: '100px 0', textAlign: 'center' }}>상품을 찾을 수 없습니다.</div>;
   }
 
   const handleAddToCart = () => {
-    cartContext.addToCart({
-      id: parseInt(product.id),
+    addToCart({
+      id: product.id,
       title: product.name,
       price: product.price.toLocaleString(),
       imageUrl: product.image,
@@ -73,8 +94,8 @@ export default function ProductDetail() {
   };
 
   const handleBuyNow = () => {
-    cartContext.setDirectBuy({
-      id: parseInt(product.id),
+    setDirectBuy({
+      id: product.id,
       title: product.name,
       price: product.price.toLocaleString(),
       imageUrl: product.image,
@@ -110,7 +131,7 @@ export default function ProductDetail() {
               <Link href="/cart" className={homeStyles.iconItem}>
                 <span className={homeStyles.icon}>🛒</span>
                 <span className={homeStyles.iconText}>장바구니</span>
-                <span className={homeStyles.cartBadge}>{cartContext.cart.length}</span>
+                <span className={homeStyles.cartBadge}>{cart.length}</span>
               </Link>
             </div>
           </div>

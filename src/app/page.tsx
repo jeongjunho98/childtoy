@@ -4,9 +4,10 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
-import { products, Product } from "@/data/products";
+import { products as staticProducts, Product } from "@/data/products";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
+import { getProducts } from "./actions/product";
 
 const FlashTimer = () => {
   const [timeLeft, setTimeLeft] = useState(14400); // 4시간
@@ -39,7 +40,7 @@ const ProductCard = ({ product }: { product: Product }) => {
     e.preventDefault();
     e.stopPropagation();
     addToCart({
-      id: parseInt(product.id),
+      id: product.id,
       title: product.name,
       price: product.price.toLocaleString(),
       imageUrl: product.image,
@@ -52,7 +53,7 @@ const ProductCard = ({ product }: { product: Product }) => {
     e.preventDefault();
     e.stopPropagation();
     setDirectBuy({
-      id: parseInt(product.id),
+      id: product.id,
       title: product.name,
       price: product.price.toLocaleString(),
       imageUrl: product.image,
@@ -95,6 +96,7 @@ export default function Home() {
   const { cart } = useCart();
   const { user, logout } = useAuth();
   
+  const [dbProducts, setDbProducts] = useState<Product[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [specialFilter, setSpecialFilter] = useState<string | null>(null);
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
@@ -111,21 +113,37 @@ export default function Home() {
     { id: 'boardgame', name: '꿀잼 게임', icon: '🎲' },
   ];
 
+  // DB에서 상품 가져오기
+  useEffect(() => {
+    const fetchProducts = async () => {
+      const data = await getProducts();
+      if (data && data.length > 0) {
+        // Prisma 타입을 프론트엔드 Product 타입으로 변환 (필요시)
+        setDbProducts(data as any);
+      } else {
+        setDbProducts(staticProducts);
+      }
+    };
+    fetchProducts();
+  }, []);
+
+  // 필터링된 상품 목록 계산
   const filteredProducts = useMemo(() => {
-    let list = [...products];
+    const listToFilter = dbProducts.length > 0 ? dbProducts : staticProducts;
+    let list = [...listToFilter];
     
     if (specialFilter === 'pangpang') {
-      list = products.filter(p => p.isPangPang);
+      list = listToFilter.filter(p => p.isPangPang);
     } else if (specialFilter === 'best') {
-      list = [...products].sort((a, b) => b.reviewCount - a.reviewCount).slice(0, 8);
+      list = [...listToFilter].sort((a, b) => b.reviewCount - a.reviewCount).slice(0, 8);
     } else if (specialFilter === 'sale') {
-      list = products.filter(p => p.originalPrice && (p.originalPrice > p.price));
+      list = listToFilter.filter(p => p.originalPrice && (p.originalPrice > p.price));
     } else if (selectedCategory !== 'all') {
-      list = products.filter(p => p.category === selectedCategory);
+      list = listToFilter.filter(p => p.category === selectedCategory);
     }
     
     return list;
-  }, [selectedCategory, specialFilter]);
+  }, [dbProducts, selectedCategory, specialFilter]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -264,8 +282,8 @@ export default function Home() {
             <FlashTimer />
           </div>
           <div className={styles.productGrid}>
-            {products.slice(0, 4).map(product => (
-              <ProductCard key={product.id} product={product} />
+            {(dbProducts.length > 0 ? dbProducts : staticProducts).slice(0, 4).map(product => (
+              <ProductCard key={product.id} product={product as any} />
             ))}
           </div>
         </section>
@@ -277,7 +295,7 @@ export default function Home() {
           <div className={styles.productGrid}>
             {filteredProducts.length > 0 ? (
               filteredProducts.map(product => (
-                <ProductCard key={product.id} product={product} />
+                <ProductCard key={product.id} product={product as any} />
               ))
             ) : (
               <p style={{ gridColumn: '1/-1', textAlign: 'center', padding: '100px 0', fontSize: '20px', color: '#aaa' }}>
