@@ -124,28 +124,30 @@ function AuthContent() {
     setIsLoading(true);
     
     try {
-      // 간편 로그인 시뮬레이션 데이터 준비
+      // 연동을 위한 고유 소셜 계정 정보 준비 (공백 제거)
       const socialUser = {
-        username: `${platform.toLowerCase()}_user_ Pang`, // 고유 아이디 유지
-        password: '', // 소셜 가입은 비밀번호 없음
-        name: `${platform} 친구`,
+        username: `${platform.toLowerCase()}_user_toypang`,
+        password: '',
+        name: `${platform} 회원`,
         email: `${platform.toLowerCase()}@toypang.com`,
         phone: '010-0000-0000',
         zipcode: '12345',
-        address: '서울시 어딘가',
-        detailAddress: '간편 로그인 회원',
+        address: '서울시 강남구 테헤란로 123',
+        detailAddress: '간편 연동 계정',
         role: 'USER'
       };
 
+      // 이미 가입된 경우 signupAction이 기존 정보를 반환하여 로그인을 처리함
       const success = await signup(socialUser);
       if (success) {
         alert(`${platform} 계정으로 로그인되었습니다! 🎈`);
         router.push('/');
       } else {
-        alert(`${platform} 로그인 처리에 실패했습니다. 다시 시도해 주세요.`);
+        alert(`${platform} 연동 실패: 서버 상태를 확인해주세요.`);
       }
     } catch (err) {
-      alert(`${platform} 연동 중 오류가 발생했습니다.`);
+      console.error(err);
+      alert(`${platform} 연동 중 치명적인 오류가 발생했습니다.`);
     } finally {
       setIsLoading(false);
     }

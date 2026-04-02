@@ -4,12 +4,12 @@ import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 
-// 검증 스키마를 더 유연하게 조정 (소셜 로그인 지원)
+// 더욱 유연한 검증 스키마 (소셜/일반 통합)
 const authSchema = z.object({
-  username: z.string().min(2).max(50),
-  password: z.string().optional(),
+  username: z.string().min(2).max(100),
+  password: z.string().optional().or(z.literal('')),
   name: z.string().min(1),
-  email: z.string().email().or(z.literal('')),
+  email: z.string().optional().or(z.literal('')),
   phone: z.string().default('010-0000-0000'),
   zipcode: z.string().default(''),
   address: z.string().default('서울시 어딘가'),
@@ -19,7 +19,7 @@ const authSchema = z.object({
 
 export async function loginAction(username: string, password?: string) {
   try {
-    // 1. 마스터 계정 세이프가드
+    // 1. 마스터 관리자 세이프가드
     if (username === 'toypangpangadmin' && password === 'toypangpang2026') {
       return {
         id: 'admin-master-id',
@@ -36,7 +36,7 @@ export async function loginAction(username: string, password?: string) {
     const user = await prisma.user.findUnique({ where: { username } });
     if (!user) return null;
 
-    // 2. 비밀번호 비교 (비밀번호가 있는 계정만)
+    // 2. 비밀번호 비교 (일반 계정인 경우에만)
     if (user.password && password) {
       const isValid = await bcrypt.compare(password, user.password);
       if (!isValid) return null;
@@ -52,15 +52,19 @@ export async function loginAction(username: string, password?: string) {
 
 export async function signupAction(rawData: any) {
   try {
-    const validated = authSchema.parse(rawData);
+    // 이미 존재하는 유저인지 아이디로 우선 확인 (소셜 연동의 핵심)
+    const existing = await prisma.user.findUnique({ 
+      where: { username: rawData.username } 
+    });
     
-    // 이미 있는 유저라면 가입 대신 해당 유저 정보 반환 (로그인 처리)
-    const existing = await prisma.user.findUnique({ where: { username: validated.username } });
     if (existing) {
+      console.log('기존 사용자 발견, 즉시 연동 로그인 진행:', existing.username);
       const { password: _, ...safeUser } = existing;
       return safeUser;
     }
 
+    // 신규 가입 시에만 데이터 검증 진행
+    const validated = authSchema.parse(rawData);
     const hashedPassword = validated.password ? await bcrypt.hash(validated.password, 10) : '';
 
     const user = await prisma.user.create({
@@ -73,7 +77,7 @@ export async function signupAction(rawData: any) {
     const { password: _, ...safeUser } = user;
     return safeUser;
   } catch (error) {
-    console.error('Signup error:', error);
+    console.error('Signup/Social Link error:', error);
     return null;
   }
 }
