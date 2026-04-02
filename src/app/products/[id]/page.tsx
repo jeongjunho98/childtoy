@@ -133,7 +133,7 @@ export default function ProductDetail() {
                     imageUrl: product.image,
                     description: product.description
                   });
-                  router.push('/cart');
+                  router.push('/checkout');
                 }}
               >
                 바로 구매하기
