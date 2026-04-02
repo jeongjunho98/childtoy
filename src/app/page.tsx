@@ -24,7 +24,7 @@ const FlashTimer = () => {
     return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
-  return <span className={styles.timer}>{formatTime(timeLeft)} 남음</span>;
+  return <span className={styles.timer}>⏰ {formatTime(timeLeft)} 남았어요!</span>;
 };
 
 const ProductCard = ({ product }: { product: Product }) => {
@@ -47,11 +47,11 @@ const ProductCard = ({ product }: { product: Product }) => {
             {discountRate > 0 && <span className={styles.discountRate}>{discountRate}%</span>}
             <span className={styles.currentPrice}>{product.price.toLocaleString()}원</span>
           </div>
-          {product.isPangPang && <div className={styles.pangpangBadge}>🚀 팡팡배송</div>}
+          {product.isPangPang && <div className={styles.pangpangBadge}>🚀 내일 도착!</div>}
         </div>
         <div className={styles.socialInfo}>
           <span className={styles.stars}>{"★".repeat(Math.floor(product.rating))}</span>
-          <span className={styles.reviewCount}>({product.reviewCount.toLocaleString()})</span>
+          <span className={styles.reviewCount}>({product.reviewCount.toLocaleString()}명의 친구들)</span>
         </div>
       </div>
     </Link>
@@ -62,25 +62,21 @@ export default function Home() {
   const { cart } = useCart();
   const { user, logout } = useAuth();
   
-  // 필터 상태 관리
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [specialFilter, setSpecialFilter] = useState<string | null>(null);
-  
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const categoryRef = useRef<HTMLDivElement>(null);
   const goldBoxRef = useRef<HTMLElement>(null);
 
   const categories = [
-    { id: 'robot', name: '로봇/변신', icon: '🤖' },
-    { id: 'doll', name: '인형/피규어', icon: '🧸' },
-    { id: 'car', name: '자동차/탈것', icon: '🚗' },
-    { id: 'education', name: '교구/학습', icon: '📚' },
-    { id: 'boardgame', name: '보드게임', icon: '🎲' },
+    { id: 'robot', name: '멋진 로봇', icon: '🤖' },
+    { id: 'doll', name: '귀여운 인형', icon: '🧸' },
+    { id: 'car', name: '쌩쌩 자동차', icon: '🚗' },
+    { id: 'education', name: '똑똑한 교구', icon: '📚' },
+    { id: 'boardgame', name: '꿀잼 게임', icon: '🎲' },
   ];
 
-  // 필터링 로직 확장
   let filteredProducts = [...products];
-
   if (specialFilter === 'pangpang') {
     filteredProducts = products.filter(p => p.isPangPang);
   } else if (specialFilter === 'best') {
@@ -91,7 +87,6 @@ export default function Home() {
     filteredProducts = products.filter(p => p.category === selectedCategory);
   }
 
-  // 외부 클릭 시 카테고리 메뉴 닫기
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (categoryRef.current && !categoryRef.current.contains(event.target as Node)) {
@@ -115,33 +110,30 @@ export default function Home() {
   };
 
   const getSectionTitle = () => {
-    if (specialFilter === 'pangpang') return "🚀 팡팡배송 상품";
-    if (specialFilter === 'best') return "🏆 실시간 베스트 상품";
-    if (specialFilter === 'sale') return "🎁 특별 기획전 상품";
-    if (selectedCategory !== 'all') return categories.find(c => c.id === selectedCategory)?.name + " 추천 상품";
-    return "전체 추천 상품";
+    if (specialFilter === 'pangpang') return "🚀 슈웅~ 팡팡배송 상품!";
+    if (specialFilter === 'best') return "🏆 지금 제일 잘 나가요!";
+    if (specialFilter === 'sale') return "🎁 와! 신나는 할인 파티!";
+    if (selectedCategory !== 'all') return categories.find(c => c.id === selectedCategory)?.name + " 모여라!";
+    return "친구들에게 추천하는 상품";
   };
 
   return (
     <div className={styles.main}>
-      {/* Utility Bar - 중복된 로그인/회원가입 제거 */}
       <div className={styles.utilityBar}>
-        <div className="container" style={{ display: 'flex', justifyContent: 'flex-end', gap: '20px' }}>
-          {user && <span style={{ fontWeight: 'bold', color: '#333', fontSize: '12px' }}>{user.name}님 환영합니다!</span>}
+        <div className="container" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+          {user && <span style={{ fontWeight: '800', color: '#555', fontSize: '12px' }}>✨ {user.name} 친구, 반가워요!</span>}
           <Link href="/cs" className={styles.utilityLink}>고객센터</Link>
-          <Link href="/orders" className={styles.utilityLink}>주문배송조회</Link>
+          <Link href="/orders" className={styles.utilityLink}>배송조회</Link>
           {user && <button onClick={logout} className={styles.utilityLink}>로그아웃</button>}
         </div>
       </div>
 
-
-      {/* Header */}
       <header className={styles.header}>
         <div className="container">
           <div className={styles.headerContent}>
-            <div onClick={resetFilters} style={{ cursor: 'pointer' }} className={styles.logo}>ToyPangPang</div>
+            <div onClick={resetFilters} style={{ cursor: 'pointer' }} className={styles.logo}>토이팡팡 🎈</div>
             <div className={styles.searchBar}>
-              <input type="text" className={styles.searchInput} placeholder="찾고 싶은 장난감을 검색해보세요!" />
+              <input type="text" className={styles.searchInput} placeholder="어떤 장난감을 찾고 있나요?" />
               <div className={styles.searchBtn}>🔍</div>
             </div>
             <div className={styles.headerIcons}>
@@ -159,18 +151,17 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Navigation Bar - 기능 연결 */}
       <nav className={styles.navBar}>
         <div className="container">
           <div className={styles.navContent}>
             <div className={styles.categoryMenuWrapper} ref={categoryRef}>
               <div className={styles.categoryBtn} onClick={() => setIsCategoryOpen(!isCategoryOpen)}>
-                ☰ 카테고리
+                🌈 장난감 카테고리
               </div>
               {isCategoryOpen && (
                 <div className={styles.categoryDropdown}>
                   <div className={styles.categoryItem} onClick={() => { resetFilters(); setIsCategoryOpen(false); }}>
-                    🔥 전체보기
+                    ✨ 모두보기
                   </div>
                   {categories.map(cat => (
                     <div key={cat.id} className={styles.categoryItem} onClick={() => {
@@ -184,19 +175,18 @@ export default function Home() {
                 </div>
               )}
             </div>
-            <button className={`${styles.navItem} ${!specialFilter && selectedCategory === 'all' ? styles.activeNavItem : ''}`} onClick={resetFilters}>전체상품</button>
             <button className={`${styles.navItem} ${specialFilter === 'pangpang' ? styles.activeNavItem : ''}`} onClick={() => { setSpecialFilter('pangpang'); setSelectedCategory('all'); }}>팡팡배송 🚀</button>
-            <button className={styles.navItem} onClick={scrollToGoldBox}>골드박스</button>
-            <button className={`${styles.navItem} ${specialFilter === 'best' ? styles.activeNavItem : ''}`} onClick={() => { setSpecialFilter('best'); setSelectedCategory('all'); }}>베스트</button>
-            <button className={`${styles.navItem} ${specialFilter === 'sale' ? styles.activeNavItem : ''}`} onClick={() => { setSpecialFilter('sale'); setSelectedCategory('all'); }}>기획전</button>
+            <button className={styles.navItem} onClick={scrollToGoldBox}>황금상자</button>
+            <button className={`${styles.navItem} ${specialFilter === 'best' ? styles.activeNavItem : ''}`} onClick={() => { setSpecialFilter('best'); setSelectedCategory('all'); }}>인기짱!</button>
+            <button className={`${styles.navItem} ${specialFilter === 'sale' ? styles.activeNavItem : ''}`} onClick={() => { setSpecialFilter('sale'); setSelectedCategory('all'); }}>반값파티</button>
           </div>
         </div>
       </nav>
 
       <section className={styles.hero}>
         <div className={styles.heroContent}>
-          <h1 className={styles.heroTitle}>어린이날 미리 준비 특가! 🎁</h1>
-          <p className={styles.heroSubtitle}>최대 50% 할인 + 팡팡배송으로 내일 바로 도착</p>
+          <h1 className={styles.heroTitle}>장난감 나라에 오신걸 환영해요! 🏰</h1>
+          <p className={styles.heroSubtitle}>매일매일 새로운 즐거움이 팡팡 터져요 ✨</p>
         </div>
       </section>
 
@@ -209,14 +199,14 @@ export default function Home() {
             </button>
           ))}
           <button className={`${styles.menuItem} ${selectedCategory === 'all' && !specialFilter ? styles.activeMenu : ''}`} onClick={resetFilters}>
-            <div className={styles.menuIcon}>🔥</div>
-            <span>전체보기</span>
+            <div className={styles.menuIcon}>🎈</div>
+            <span>모두보기</span>
           </button>
         </div>
 
         <section className={styles.section} ref={goldBoxRef}>
           <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>오늘의 골드박스 📦</h2>
+            <h2 className={styles.sectionTitle}>오늘의 황금상자 📦</h2>
             <FlashTimer />
           </div>
           <div className={styles.productGrid}>
@@ -240,22 +230,20 @@ export default function Home() {
 
       <footer className={styles.footer}>
         <div className="container">
-          <div className={styles.footerContent}>
+          <div className={styles.footerContent} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div className={styles.footerLeft}>
-              <div className={styles.footerLogo}>ToyPangPang</div>
-              <div className={styles.companyInfo}>
-                <p>(주)토이팡팡 | 대표이사: 재미나이 | 사업자등록번호: 123-45-67890</p>
-                <p>서울특별시 강남구 테헤란로 123 토이타워 15층</p>
-                <p>통신판매업신고: 2026-서울강남-1234호 | 개인정보보호책임자: 홍길동</p>
+              <div className={styles.footerLogo}>토이팡팡 🎈</div>
+              <div className={styles.companyInfo} style={{ fontSize: '14px', lineHeight: '1.8' }}>
+                <p>우리아이 장난감 친구 <strong>토이팡팡</strong></p>
+                <p>(주)토이팡팡 | 대표이사: 재미나이 | 서울특별시 강남구 테헤란로 123</p>
                 <p>© 2026 ToyPangPang. All rights reserved.</p>
               </div>
             </div>
-            <div className={styles.footerRight}>
+            <div className={styles.footerRight} style={{ textAlign: 'right' }}>
               <div className={styles.csCenter}>
-                <h3>고객센터</h3>
+                <h3 style={{ fontSize: '20px', marginBottom: '10px' }}>도움이 필요하신가요?</h3>
                 <div className={styles.csNumber}>1588-1234</div>
-                <p>365일 오전 9시 - 오후 6시 운영</p>
-                <p>이메일: help@toypang.com</p>
+                <p>친구들의 웃음을 위해 언제나 열려있어요!</p>
               </div>
             </div>
           </div>
