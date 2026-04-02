@@ -1,52 +1,69 @@
 import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
+// 실제 제품군에 최적화된 고화질 Unsplash 이미지 ID 리스트
+const imgMap = {
+  robot: [
+    'https://images.unsplash.com/photo-1531650661554-d18434743ef1', // Robot
+    'https://images.unsplash.com/photo-1558060370-d644479cb6f7', // Toy robot
+    'https://images.unsplash.com/photo-1546776310-eef45dd6d63c', // Blue robot
+    'https://images.unsplash.com/photo-1527443154391-507e9dc6c5cc', // Sci-fi
+    'https://images.unsplash.com/photo-1566576721346-d4a3b4eaad5b'  // Action figure
+  ],
+  doll: [
+    'https://images.unsplash.com/photo-1596461404969-9ae70f2830c1', // Toy house
+    'https://images.unsplash.com/photo-1555448248-2571daf6344b', // Plush
+    'https://images.unsplash.com/photo-1591021681931-137936660603', // Dolls
+    'https://images.unsplash.com/photo-1513151233558-d860c5398176', // Kitchen play
+    'https://images.unsplash.com/photo-1515488764276-beab7607c1e6'  // Baby doll
+  ],
+  car: [
+    'https://images.unsplash.com/photo-1594732832278-abd644401426', // Toy bus/car
+    'https://images.unsplash.com/photo-1594930511826-64571db11660', // Fire truck
+    'https://images.unsplash.com/photo-1581235720704-06d3acfcb36f', // Track
+    'https://images.unsplash.com/photo-1591702548275-3ad0ca47474c', // Excavator
+    'https://images.unsplash.com/photo-1516937941344-00b4e0337589'  // Race car
+  ],
+  education: [
+    'https://images.unsplash.com/photo-1585366119957-e9730b6d0f60', // Lego
+    'https://images.unsplash.com/photo-1516062423079-7ca13cdc7f5a', // Magnets
+    'https://images.unsplash.com/photo-1510070112810-d4e9a46d9e91', // Tablet/Pad
+    'https://images.unsplash.com/photo-1544928147-79a2dbc1f389', // Sound book
+    'https://images.unsplash.com/photo-1564327487389-a0018f56b552'  // Coding toy
+  ],
+  boardgame: [
+    'https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09', // Monopoly
+    'https://images.unsplash.com/photo-1611996575749-79a3be236c34', // Cards
+    'https://images.unsplash.com/photo-1585155770447-2f66e2a397b5', // Miniature house
+    'https://images.unsplash.com/photo-1601314002592-b846038d2eff', // Colorful game
+    'https://images.unsplash.com/photo-1611891487122-207579d67d98'  // Chess/Strategy
+  ]
+};
+
 const productsData = [
-  // --- 로봇 (Robot) - 고유 아이템 ---
-  { id: 'rb-01', name: '헬로카봇 스톰 X 5단 합체', price: 65000, originalPrice: 82000, image: 'https://images.unsplash.com/photo-1546776310-eef45dd6d63c?w=500&q=80', description: '자동차 5대가 하나로! 거대한 스톰 X로 변신합니다.', category: 'robot', rating: 4.8, reviewCount: 1250, isPangPang: true },
-  { id: 'rb-02', name: '또봇 V 캡틴폴리스', price: 42000, originalPrice: 55000, image: 'https://images.unsplash.com/photo-1589254065878-42c9da997008?w=500&q=80', description: '도시를 지키는 경찰차 변신 로봇입니다.', category: 'robot', rating: 4.5, reviewCount: 840, isPangPang: true },
-  { id: 'rb-03', name: '미니특공대 티라볼트 슈퍼공룡', price: 58000, originalPrice: 72000, image: 'https://images.unsplash.com/photo-1531650661554-d18434743ef1?w=500&q=80', description: '강력한 티라노사우루스 파워의 공룡 로봇!', category: 'robot', rating: 4.7, reviewCount: 520, isPangPang: true },
-  { id: 'rb-04', name: '메카드볼 아칸 배틀 세트', price: 35000, originalPrice: 45000, image: 'https://images.unsplash.com/photo-1558060370-d644479cb6f7?w=500&q=80', description: '구슬 발사로 순식간에 변신하는 배틀 완구.', category: 'robot', rating: 4.4, reviewCount: 310, isPangPang: false },
-  { id: 'rb-05', name: '헬로카봇 펜타스톰 X 초대형 합체', price: 158000, originalPrice: 185000, image: 'https://images.unsplash.com/photo-1527443154391-507e9dc6c5cc?w=500&q=80', description: '카봇 시리즈의 최고봉, 거대 합체 로봇.', category: 'robot', rating: 4.9, reviewCount: 2100, isPangPang: true },
-
-  // --- 인형 (Doll) - 고유 아이템 ---
-  { id: 'dl-01', name: '캐치! 티니핑 마법의 하우스', price: 89000, originalPrice: 95000, image: 'https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?w=500&q=80', description: '티니핑 친구들의 예쁜 집과 소품 세트.', category: 'doll', rating: 4.9, reviewCount: 2310, isPangPang: true },
-  { id: 'dl-02', name: '콩순이 말하는 펭귄 냉장고', price: 45000, originalPrice: 58000, image: 'https://images.unsplash.com/photo-1555448248-2571daf6344b?w=500&q=80', description: '말하는 펭귄과 함께 즐거운 요리 놀이.', category: 'doll', rating: 4.8, reviewCount: 1800, isPangPang: true },
-  { id: 'dl-03', name: '실바니안 불이 들어오는 이층집', price: 95000, originalPrice: 120000, image: 'https://images.unsplash.com/photo-1585155770447-2f66e2a397b5?w=500&q=80', description: '실제 전등이 켜지는 정교한 미니어처.', category: 'doll', rating: 4.9, reviewCount: 3500, isPangPang: true },
-  { id: 'dl-04', name: '미미월드 프린세스 미미 대저택', price: 72000, originalPrice: 85000, image: 'https://images.unsplash.com/photo-1591021681931-137936660603?w=500&q=80', description: '공주님을 위한 완벽한 인형의 집.', category: 'doll', rating: 4.7, reviewCount: 1100, isPangPang: true },
-
-  // --- 자동차 (Car) - 고유 아이템 ---
-  { id: 'cr-01', name: '타요 컨트롤 주차타워 세트', price: 49000, originalPrice: 62000, image: 'https://images.unsplash.com/photo-1594732832278-abd644401426?w=500&q=80', description: '엘리베이터가 작동하는 3층 주차타워.', category: 'car', rating: 4.6, reviewCount: 920, isPangPang: true },
-  { id: 'cr-02', name: '브루더 맥 트럭 소방차', price: 98000, originalPrice: 115000, image: 'https://images.unsplash.com/photo-1594930511826-64571db11660?w=500&q=80', description: '실제 물이 나오는 정교한 소방차 완구.', category: 'car', rating: 4.9, reviewCount: 650, isPangPang: true },
-  { id: 'cr-03', name: '로보카폴리 다이캐스팅 세트', price: 38000, originalPrice: 48000, image: 'https://images.unsplash.com/photo-1581235720704-06d3acfcb36f?w=500&q=80', description: '구조대 미니카 4종 세트.', category: 'car', rating: 4.7, reviewCount: 1400, isPangPang: true },
-
-  // --- 교구 (Edu) - 고유 아이템 ---
-  { id: 'ed-01', name: '레고 듀플로 세계 동물 탐험', price: 85000, originalPrice: 110000, image: 'https://images.unsplash.com/photo-1585366119957-e9730b6d0f60?w=500&q=80', description: '영유아 맞춤형 거대 블록 학습 세트.', category: 'education', rating: 4.9, reviewCount: 4200, isPangPang: true },
-  { id: 'ed-02', name: '맥포머스 마스터 마인드 세트', price: 298000, originalPrice: 350000, image: 'https://images.unsplash.com/photo-1516062423079-7ca13cdc7f5a?w=500&q=80', description: '창의력을 키우는 최고의 자석 교구.', category: 'education', rating: 4.9, reviewCount: 5100, isPangPang: true },
-
-  // --- 보드게임 (Board) - 고유 아이템 ---
-  { id: 'bg-01', name: '모두의 마블 메가디럭스', price: 38000, originalPrice: 48000, image: 'https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09?w=500&q=80', description: '온 가족이 즐기는 국민 경제 게임.', category: 'boardgame', rating: 4.7, reviewCount: 1850, isPangPang: true },
-  { id: 'bg-02', name: '할리갈리 컵스 순발력 게임', price: 16000, originalPrice: 22000, image: 'https://images.unsplash.com/photo-1611996575749-79a3be236c34?w=500&q=80', description: '그림대로 컵을 빨리 쌓고 종을 울리세요!', category: 'boardgame', rating: 4.6, reviewCount: 2100, isPangPang: true }
+  // --- 고유 핵심 제품군 ---
+  { id: 'rb-01', name: '헬로카봇 스톰 X 5단 합체', price: 65000, originalPrice: 82000, category: 'robot', description: '자동차 5대가 하나로! 거대한 스톰 X로 변신합니다.' },
+  { id: 'rb-02', name: '또봇 V 캡틴폴리스', price: 42000, originalPrice: 55000, category: 'robot', description: '도시를 지키는 경찰차 변신 로봇입니다.' },
+  { id: 'dl-01', name: '캐치! 티니핑 마법의 하우스', price: 89000, originalPrice: 95000, category: 'doll', description: '티니핑 친구들의 예쁜 집과 소품 세트.' },
+  { id: 'cr-01', name: '타요 컨트롤 주차타워 세트', price: 49000, originalPrice: 62000, category: 'car', description: '엘리베이터가 작동하는 3층 주차타워.' },
+  { id: 'ed-01', name: '레고 듀플로 세계 동물 탐험', price: 85000, originalPrice: 110000, category: 'education', description: '영유아 맞춤형 거대 블록 학습 세트.' },
+  { id: 'bg-01', name: '모두의 마블 메가디럭스', price: 38000, originalPrice: 48000, category: 'boardgame', description: '온 가족이 즐기는 국민 경제 게임.' }
 ];
 
 async function main() {
-  console.log('Seeding admin user...');
-  
+  console.log('--- DB 시딩 시작 ---');
+
+  // 1. 관리자 계정 생성 (확실하게 업데이트)
   const hashedPassword = await bcrypt.hash('toypangpang2026', 10);
+  
+  // 기존 중복 관리자 제거
+  await prisma.user.deleteMany({ where: { username: 'admin' } });
+  await prisma.user.deleteMany({ where: { username: 'toypangpangadmin' } });
 
-  // 기존 'admin' 계정 삭제
-  await prisma.user.deleteMany({
-    where: { username: 'admin' }
-  });
-
-  await prisma.user.upsert({
-    where: { username: 'toypangpangadmin' },
-    update: {
-      password: hashedPassword
-    },
-    create: {
+  const admin = await prisma.user.create({
+    data: {
       username: 'toypangpangadmin',
       password: hashedPassword,
       name: '토이팡팡관리자',
@@ -57,63 +74,71 @@ async function main() {
       role: 'ADMIN'
     }
   });
+  console.log('✅ 관리자 계정 생성 완료:', admin.username);
 
-  console.log('Seeding products...');
-  for (const product of productsData) {
-    await prisma.product.upsert({
-      where: { id: product.id },
-      update: product,
-      create: product,
-    });
-  }
+  // 2. 상품 데이터 초기화 및 생성
+  await prisma.orderItem.deleteMany({});
+  await prisma.order.deleteMany({});
+  await prisma.review.deleteMany({});
+  await prisma.product.deleteMany({});
+
+  console.log('📦 상품 데이터 생성 중...');
   
-  const categories = ['robot', 'doll', 'car', 'education', 'boardgame'];
-  const names = {
-    robot: ['카봇 에이스', '카봇 프론', '또봇 X', '또봇 Y', '미니특공대 맥스'],
-    doll: ['하츄핑 소파', '조아핑 침대', '콩순이 유모차', '아기상어 인형'],
-    car: ['타요 라니', '타요 가니', '폴리 로이', '폴리 엠버'],
-    education: ['레고 닌자고', '핑크퐁 한글가방', '뽀로로 코딩'],
-    boardgame: ['클루 추리', '모노폴리', '우노 플립', '젠가']
-  };
-  const images = {
-    robot: 'https://images.unsplash.com/photo-1546776310-eef45dd6d63c',
-    doll: 'https://images.unsplash.com/photo-1596461404969-9ae70f2830c1',
-    car: 'https://images.unsplash.com/photo-1594732832278-abd644401426',
-    education: 'https://images.unsplash.com/photo-1585366119957-e9730b6d0f60',
-    boardgame: 'https://images.unsplash.com/photo-1611996575749-79a3be236c34'
-  };
-
-  for (let i = 1; i <= 85; i++) {
-    const currentCat = categories[i % 5] as keyof typeof names;
-    const namePool = names[currentCat];
-    const baseName = namePool[i % namePool.length];
-    const finalName = `[인기] ${baseName} 에디션 ${i}`;
-
-    await prisma.product.upsert({
-      where: { id: `auto-${i}` },
-      update: {},
-      create: {
-        id: `auto-${i}`,
-        name: finalName,
-        price: 30000 + (i * 1000),
-        originalPrice: 45000 + (i * 1000),
-        image: `${images[currentCat]}?w=500&q=80`,
-        description: `대한민국 친구들이 정말 좋아하는 ${baseName} 시리즈! 안전한 정품 완구입니다.`,
-        category: currentCat,
-        rating: 4.0 + (Math.random() * 1),
-        reviewCount: Math.floor(Math.random() * 1000),
-        isPangPang: i % 2 === 0,
+  // 핵심 상품 시딩
+  for (const p of productsData) {
+    const images = imgMap[p.category as keyof typeof imgMap];
+    await prisma.product.create({
+      data: {
+        ...p,
+        image: `${images[0]}?w=800&q=80`,
+        rating: 4.5 + Math.random() * 0.5,
+        reviewCount: 100 + Math.floor(Math.random() * 5000),
+        isPangPang: true
       }
     });
   }
-  console.log('Seeding finished!');
+
+  // 대한민국 인기 브랜드 기반 100개 확장 (중복 NO, 번호 NO)
+  const brandNames = {
+    robot: ['또봇 기간트 V', '미니특공대 티라볼트', '메카드볼 아칸', '파워레인저 돈브라더즈', '카봇 윙라이온', '바이클론즈 우르사', '지오메카 레오'],
+    doll: ['콩순이 냉장고', '시크릿쥬쥬 별의여신', '실바니안 이층집', '미미 패션쇼', '아기상어 인형', '하츄핑 소파', '조아핑 침대'],
+    car: ['타요 라니', '타요 가니', '로보카폴리 로이', '브루더 소방차', '핫휠 가라지', '토미카 레일', '페라리 푸쉬카'],
+    education: ['레고 시티 소방서', '맥포머스 마스터', '코딩펫 밀키', '핑크퐁 한글가방', '뽀로로 코딩패드', '지오맥 마그네틱'],
+    boardgame: ['루미큐브 클래식', '할리갈리 컵스', '인생게임 주니어', '클루 추리', '모노폴리 K-부동산', '펭귄 얼음깨기']
+  };
+
+  for (let i = 1; i <= 100; i++) {
+    const categoryKeys = ['robot', 'doll', 'car', 'education', 'boardgame'];
+    const cat = categoryKeys[i % 5] as keyof typeof brandNames;
+    const names = brandNames[cat];
+    const baseName = names[i % names.length];
+    
+    const prefixes = ['[정품] ', '[한정] ', '[인기] ', '✨ '];
+    const suffixes = [' Pro', ' 플러스', ' 에디션', ''];
+    const finalName = `${prefixes[i % 4]}${baseName}${suffixes[i % 4]}`;
+
+    const images = imgMap[cat];
+    const selectedImg = images[i % images.length];
+
+    await prisma.product.create({
+      data: {
+        id: `uniq-${i}`,
+        name: finalName,
+        price: 30000 + (i * 500),
+        originalPrice: 45000 + (i * 500),
+        image: `${selectedImg}?w=800&q=80`,
+        description: `대한민국 아이들이 가장 선호하는 ${baseName} 시리즈! 안전 검증을 마친 정품 완구입니다.`,
+        category: cat,
+        rating: 4.0 + Math.random() * 1,
+        reviewCount: 50 + Math.floor(Math.random() * 2000),
+        isPangPang: i % 2 === 0
+      }
+    });
+  }
+
+  console.log('✅ 모든 시딩이 완료되었습니다!');
 }
 
 main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+  .catch(e => { console.error(e); process.exit(1); })
+  .finally(async () => { await prisma.$disconnect(); });
