@@ -13,10 +13,11 @@ datasource db {
 model User {
   id            String   @id @default(uuid())
   username      String   @unique
-  password      String
+  password      String?  // 소셜 로그인의 경우 비밀번호가 없을 수 있음
   name          String
   email         String
   phone         String
+  zipcode       String?
   address       String
   detailAddress String
   createdAt     DateTime @default(now())
@@ -36,17 +37,38 @@ model Product {
   isPangPang    Boolean  @default(false)
   createdAt     DateTime @default(now())
   reviews       Review[]
+  orderItems    OrderItem[]
 }
 
 model Order {
-  id         String   @id @default(uuid())
-  userId     String
-  user       User     @relation(fields: [userId], references: [id])
-  totalPrice Int
-  status     String   @default("PENDING") // PENDING, PAID, SHIPPING, COMPLETED
-  address    String
-  phone      String
-  createdAt  DateTime @default(now())
+  id            String      @id @default(uuid())
+  userId        String?     // 비회원 주문 가능성을 고려해 선택사항으로 변경 가능 (여기서는 우선 연결)
+  user          User?       @relation(fields: [userId], references: [id])
+  totalPrice    Int
+  status        String      @default("PENDING") // PENDING, PAID, SHIPPING, COMPLETED, CANCELLED
+  paymentMethod String      @default("card")    // card, bank, kakao, naver, samsung
+  
+  // 배송 정보 (주문 시점의 정보를 저장해야 함)
+  receiverName  String
+  phone         String
+  zipcode       String
+  address       String
+  detailAddress String
+  deliveryMemo  String?
+  
+  orderItems    OrderItem[]
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+  price     Int     // 주문 당시의 가격 저장
 }
 
 model Review {
