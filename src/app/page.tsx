@@ -67,6 +67,7 @@ export default function Home() {
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const categoryRef = useRef<HTMLDivElement>(null);
   const goldBoxRef = useRef<HTMLElement>(null);
+  const productListRef = useRef<HTMLElement>(null);
 
   const categories = [
     { id: 'robot', name: '멋진 로봇', icon: '🤖' },
@@ -76,6 +77,7 @@ export default function Home() {
     { id: 'boardgame', name: '꿀잼 게임', icon: '🎲' },
   ];
 
+  // 필터링 로직 개선
   let filteredProducts = [...products];
   if (specialFilter === 'pangpang') {
     filteredProducts = products.filter(p => p.isPangPang);
@@ -96,6 +98,19 @@ export default function Home() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const handleCategorySelect = (id: string) => {
+    setSelectedCategory(id);
+    setSpecialFilter(null);
+    setIsCategoryOpen(false);
+    productListRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleSpecialFilter = (filter: string) => {
+    setSpecialFilter(filter);
+    setSelectedCategory('all');
+    productListRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   const scrollToGoldBox = () => {
     goldBoxRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -164,21 +179,18 @@ export default function Home() {
                     ✨ 모두보기
                   </div>
                   {categories.map(cat => (
-                    <div key={cat.id} className={styles.categoryItem} onClick={() => {
-                      setSelectedCategory(cat.id);
-                      setSpecialFilter(null);
-                      setIsCategoryOpen(false);
-                    }}>
+                    <div key={cat.id} className={styles.categoryItem} onClick={() => handleCategorySelect(cat.id)}>
                       {cat.icon} {cat.name}
                     </div>
                   ))}
                 </div>
               )}
             </div>
-            <button className={`${styles.navItem} ${specialFilter === 'pangpang' ? styles.activeNavItem : ''}`} onClick={() => { setSpecialFilter('pangpang'); setSelectedCategory('all'); }}>팡팡배송 🚀</button>
+            <button className={`${styles.navItem} ${!specialFilter && selectedCategory === 'all' ? styles.activeNavItem : ''}`} onClick={resetFilters}>전체상품</button>
+            <button className={`${styles.navItem} ${specialFilter === 'pangpang' ? styles.activeNavItem : ''}`} onClick={() => handleSpecialFilter('pangpang')}>팡팡배송 🚀</button>
             <button className={styles.navItem} onClick={scrollToGoldBox}>황금상자</button>
-            <button className={`${styles.navItem} ${specialFilter === 'best' ? styles.activeNavItem : ''}`} onClick={() => { setSpecialFilter('best'); setSelectedCategory('all'); }}>인기짱!</button>
-            <button className={`${styles.navItem} ${specialFilter === 'sale' ? styles.activeNavItem : ''}`} onClick={() => { setSpecialFilter('sale'); setSelectedCategory('all'); }}>반값파티</button>
+            <button className={`${styles.navItem} ${specialFilter === 'best' ? styles.activeNavItem : ''}`} onClick={() => handleSpecialFilter('best')}>인기짱!</button>
+            <button className={`${styles.navItem} ${specialFilter === 'sale' ? styles.activeNavItem : ''}`} onClick={() => handleSpecialFilter('sale')}>반값파티</button>
           </div>
         </div>
       </nav>
@@ -193,7 +205,7 @@ export default function Home() {
       <main className="container">
         <div className={styles.quickMenu}>
           {categories.map(cat => (
-            <button key={cat.id} className={`${styles.menuItem} ${selectedCategory === cat.id ? styles.activeMenu : ''}`} onClick={() => { setSelectedCategory(cat.id); setSpecialFilter(null); }}>
+            <button key={cat.id} className={`${styles.menuItem} ${selectedCategory === cat.id ? styles.activeMenu : ''}`} onClick={() => handleCategorySelect(cat.id)}>
               <div className={styles.menuIcon}>{cat.icon}</div>
               <span>{cat.name}</span>
             </button>
@@ -216,14 +228,20 @@ export default function Home() {
           </div>
         </section>
 
-        <section className={styles.section}>
+        <section className={styles.section} ref={productListRef}>
           <div className={styles.sectionHeader}>
             <h2 className={styles.sectionTitle}>{getSectionTitle()}</h2>
           </div>
           <div className={styles.productGrid}>
-            {filteredProducts.map(product => (
-              <ProductCard key={product.id} product={product} />
-            ))}
+            {filteredProducts.length > 0 ? (
+              filteredProducts.map(product => (
+                <ProductCard key={product.id} product={product} />
+              ))
+            ) : (
+              <p style={{ gridColumn: '1/-1', textAlign: 'center', padding: '100px 0', fontSize: '20px', color: '#aaa' }}>
+                아쉽게도 조건에 맞는 장난감이 없어요.. 😢
+              </p>
+            )}
           </div>
         </section>
       </main>
