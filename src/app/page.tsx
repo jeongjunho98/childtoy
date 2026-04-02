@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
@@ -98,6 +98,7 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [specialFilter, setSpecialFilter] = useState<string | null>(null);
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
+  
   const categoryRef = useRef<HTMLDivElement>(null);
   const goldBoxRef = useRef<HTMLElement>(null);
   const productListRef = useRef<HTMLElement>(null);
@@ -110,16 +111,22 @@ export default function Home() {
     { id: 'boardgame', name: '꿀잼 게임', icon: '🎲' },
   ];
 
-  let filteredProducts = [...products];
-  if (specialFilter === 'pangpang') {
-    filteredProducts = products.filter(p => p.isPangPang);
-  } else if (specialFilter === 'best') {
-    filteredProducts = [...products].sort((a, b) => b.reviewCount - a.reviewCount).slice(0, 8);
-  } else if (specialFilter === 'sale') {
-    filteredProducts = products.filter(p => p.originalPrice && (p.originalPrice > p.price));
-  } else if (selectedCategory !== 'all') {
-    filteredProducts = products.filter(p => p.category === selectedCategory);
-  }
+  // 필터링된 상품 목록 계산 (useMemo 사용으로 최적화 및 정확성 보장)
+  const filteredProducts = useMemo(() => {
+    let list = [...products];
+    
+    if (specialFilter === 'pangpang') {
+      list = products.filter(p => p.isPangPang);
+    } else if (specialFilter === 'best') {
+      list = [...products].sort((a, b) => b.reviewCount - a.reviewCount).slice(0, 8);
+    } else if (specialFilter === 'sale') {
+      list = products.filter(p => p.originalPrice && (p.originalPrice > p.price));
+    } else if (selectedCategory !== 'all') {
+      list = products.filter(p => p.category === selectedCategory);
+    }
+    
+    return list;
+  }, [selectedCategory, specialFilter]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -132,22 +139,26 @@ export default function Home() {
   }, []);
 
   const handleCategorySelect = (id: string) => {
-    setSelectedCategory(id);
     setSpecialFilter(null);
+    setSelectedCategory(id);
     setIsCategoryOpen(false);
-    productListRef.current?.scrollIntoView({ behavior: 'smooth' });
+    setTimeout(() => {
+      productListRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
   };
 
   const handleSpecialFilter = (filter: string) => {
-    setSpecialFilter(filter);
     setSelectedCategory('all');
-    productListRef.current?.scrollIntoView({ behavior: 'smooth' });
+    setSpecialFilter(filter);
+    setTimeout(() => {
+      productListRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
   };
 
   const scrollToGoldBox = () => {
-    goldBoxRef.current?.scrollIntoView({ behavior: 'smooth' });
     setSpecialFilter(null);
     setSelectedCategory('all');
+    goldBoxRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
 
   const resetFilters = () => {
