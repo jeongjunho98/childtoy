@@ -13,7 +13,7 @@ export default function ProductDetail() {
   const params = useParams();
   const router = useRouter();
   const { addToCart, cart } = useCart();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   
   const id = params.id as string;
   const product = products.find((p) => p.id === id);
@@ -61,15 +61,38 @@ export default function ProductDetail() {
   }
 
   return (
-    <div>
+    <div className={homeStyles.main}>
+      {/* Utility Bar */}
+      <div className={homeStyles.utilityBar}>
+        <div className="container" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+          {user && <span style={{ fontWeight: '800', color: '#555', fontSize: '12px' }}>✨ {user.name} 친구, 반가워요!</span>}
+          <Link href="/cs" className={homeStyles.utilityLink}>고객센터</Link>
+          <Link href="/orders" className={homeStyles.utilityLink}>배송조회</Link>
+          {user && <button onClick={logout} className={homeStyles.utilityLink}>로그아웃</button>}
+        </div>
+      </div>
+
+      {/* Improved Header */}
       <header className={homeStyles.header}>
-        <div className="container" style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
-          <Link href="/" className={homeStyles.logo}>토이팡팡 🎈</Link>
-          <nav className={homeStyles.nav}>
-            <Link href="/">홈</Link>
-            <Link href="/auth">{user ? `${user.name}님` : '로그인'}</Link>
-            <Link href="/cart">장바구니 ({cart.length})</Link>
-          </nav>
+        <div className="container">
+          <div className={homeStyles.headerContent}>
+            <Link href="/" className={homeStyles.logo}>토이팡팡 🎈</Link>
+            <div className={homeStyles.searchBar}>
+              <input type="text" className={homeStyles.searchInput} placeholder="어떤 장난감을 찾고 있나요?" />
+              <div className={homeStyles.searchBtn}>🔍</div>
+            </div>
+            <div className={homeStyles.headerIcons}>
+              <Link href="/auth" className={homeStyles.iconItem}>
+                <span className={homeStyles.icon}>👤</span>
+                <span className={homeStyles.iconText}>{user ? '내정보' : '로그인'}</span>
+              </Link>
+              <Link href="/cart" className={homeStyles.iconItem}>
+                <span className={homeStyles.icon}>🛒</span>
+                <span className={homeStyles.iconText}>장바구니</span>
+                <span className={homeStyles.cartBadge}>{cart.length}</span>
+              </Link>
+            </div>
+          </div>
         </div>
       </header>
 
