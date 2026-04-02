@@ -14,7 +14,7 @@ import { getProductById } from "@/app/actions/product";
 export default function ProductDetail() {
   const params = useParams();
   const router = useRouter();
-  const { addToCart, setDirectBuy } = useCart();
+  const { addToCart, setDirectBuy, cart } = useCart();
   const { user, logout } = useAuth();
   
   const id = params.id as string;
@@ -25,10 +25,6 @@ export default function ProductDetail() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [newReviewContent, setNewReviewContent] = useState('');
   const [rating, setRating] = useState(5);
-
-  const detailRef = useRef<HTMLDivElement>(null);
-  const reviewRef = useRef<HTMLDivElement>(null);
-  const infoRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -96,6 +92,7 @@ export default function ProductDetail() {
               <Link href="/cart" className={homeStyles.iconItem}>
                 <div className={homeStyles.icon}>🛒</div>
                 <span className={homeStyles.iconText}>장바구니</span>
+                <span className={homeStyles.cartBadge}>{cart.length}</span>
               </Link>
             </div>
           </div>
@@ -167,26 +164,42 @@ export default function ProductDetail() {
 
         {activeTab === 'review' && (
           <section className={styles.reviewSection}>
-            <h2 className={styles.reviewTitle}>솔직한 리뷰 📝</h2>
+            <div className={styles.reviewHeaderRow}>
+              <h2 className={styles.reviewTitle}>솔직한 리뷰 📝</h2>
+              <div className={styles.reviewStats}>
+                <span>평점 {product.rating?.toFixed(1) || '5.0'}</span>
+                <span>{'⭐'.repeat(Math.floor(product.rating || 5))}</span>
+              </div>
+            </div>
+
             <form className={styles.reviewForm} onSubmit={handleAddReview}>
-              <div style={{ marginBottom: '10px' }}>
-                <span>별점: </span>
-                <select value={rating} onChange={(e) => setRating(Number(e.target.value))} style={{ padding: '5px', borderRadius: '5px' }}>
+              <div className={styles.ratingSelect}>
+                <span>별점 선택: </span>
+                <select value={rating} onChange={(e) => setRating(Number(e.target.value))} style={{ padding: '8px', borderRadius: '10px', border: '1px solid #ddd' }}>
                   {[5,4,3,2,1].map(n => <option key={n} value={n}>{'⭐'.repeat(n)}</option>)}
                 </select>
               </div>
-              <textarea className={styles.reviewInput} placeholder={user ? "사용 후기를 남겨주세요!" : "로그인 후 작성이 가능합니다."} value={newReviewContent} onChange={(e) => setNewReviewContent(e.target.value)} required disabled={!user} />
-              <button className={styles.submitReviewBtn} type="submit" disabled={!user}>리뷰 등록</button>
+              <textarea 
+                className={styles.reviewInput} 
+                placeholder={user ? "사용 후기를 길고 자세하게 남겨주세요! 다른 친구들에게 큰 도움이 됩니다. ✨" : "로그인 후 작성이 가능합니다."} 
+                value={newReviewContent} 
+                onChange={(e) => setNewReviewContent(e.target.value)} 
+                required 
+                disabled={!user} 
+              />
+              <button className={styles.submitReviewBtn} type="submit" disabled={!user}>리뷰 등록하기</button>
             </form>
+
             <div className={styles.reviewList}>
-              {reviews.length === 0 ? <p style={{textAlign:'center', color:'#ccc'}}>첫 번째 리뷰를 기다리고 있어요!</p> :
+              {reviews.length === 0 ? <p style={{textAlign:'center', color:'#ccc', padding: '50px 0'}}>아직 리뷰가 없습니다. 첫 번째 리뷰의 주인공이 되어보세요! 🎈</p> :
                 reviews.map((r) => (
-                  <div key={r.id} style={{padding:'20px 0', borderBottom:'1px solid #f5f5f5'}}>
-                    <div style={{display:'flex', gap:'10px', marginBottom:'10px'}}>
-                      <span style={{fontWeight:800}}>{r.userName}</span>
-                      <span style={{color:'#ffca28'}}>{'⭐'.repeat(r.rating)}</span>
+                  <div key={r.id} className={styles.reviewItem}>
+                    <div className={styles.reviewUserRow}>
+                      <span className={styles.userName}>{r.userName}</span>
+                      <span className={styles.reviewDate}>{r.date}</span>
                     </div>
-                    <p style={{color:'#555', fontSize:'14px'}}>{r.content}</p>
+                    <span className={styles.itemStars}>{'★'.repeat(r.rating)}</span>
+                    <p className={styles.reviewContentText}>{r.content}</p>
                   </div>
                 ))
               }
