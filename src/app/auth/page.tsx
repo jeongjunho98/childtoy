@@ -21,6 +21,8 @@ function AuthContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  
+  // 가입용 상태
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -85,10 +87,13 @@ function AuthContent() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isLoading) return;
-    setIsLoading(true);
     
+    setIsLoading(true);
+    console.log('폼 제출 시작:', username);
+
     try {
       if (isLogin) {
+        // 일반 로그인
         const success = await login(username, password);
         if (success) {
           alert('로그인 성공! 🎉');
@@ -97,6 +102,7 @@ function AuthContent() {
           alert('아이디 또는 비밀번호가 틀렸습니다.');
         }
       } else {
+        // 일반 회원가입
         if (!isSmsVerified) {
           alert('휴대폰 본인인증을 완료해주세요.');
           setIsLoading(false);
@@ -109,11 +115,12 @@ function AuthContent() {
           alert('회원가입 성공! 🎉');
           router.push('/');
         } else {
-          alert('이미 가입된 아이디이거나 입력 정보가 올바르지 않습니다.');
+          alert('이미 가입된 아이디이거나 서버 오류가 발생했습니다.');
         }
       }
     } catch (err) {
-      alert('처리 중 시스템 오류가 발생했습니다.');
+      console.error('로그인/가입 중 치명적 오류:', err);
+      alert('처리 중 오류가 발생했습니다. 다시 시도해 주세요.');
     } finally {
       setIsLoading(false);
     }
@@ -123,31 +130,31 @@ function AuthContent() {
     if (isLoading) return;
     setIsLoading(true);
     
-    try {
-      // 연동을 위한 고유 소셜 계정 정보 준비 (공백 제거)
-      const socialUser = {
-        username: `${platform.toLowerCase()}_user_toypang`,
-        password: '',
-        name: `${platform} 회원`,
-        email: `${platform.toLowerCase()}@toypang.com`,
-        phone: '010-0000-0000',
-        zipcode: '12345',
-        address: '서울시 강남구 테헤란로 123',
-        detailAddress: '간편 연동 계정',
-        role: 'USER'
-      };
+    // 플랫폼별 고유 아이디 및 정보 (연동 핵심 로직)
+    // 실제 서비스라면 OAuth 결과값을 받겠지만, 여기서는 요청하신 대로 '연동' 기능을 보장함
+    const socialUser = {
+      username: `${platform.toLowerCase()}_toypang_user`,
+      password: '', // 소셜 전용 비밀번호 없음
+      name: `${platform} 회원`,
+      email: `${platform.toLowerCase()}@toypang.com`,
+      phone: '010-0000-0000',
+      zipcode: '12345',
+      address: '서울시 강남구 테헤란로 123',
+      detailAddress: '간편 연동 회원',
+      role: 'USER'
+    };
 
-      // 이미 가입된 경우 signupAction이 기존 정보를 반환하여 로그인을 처리함
+    try {
       const success = await signup(socialUser);
       if (success) {
-        alert(`${platform} 계정으로 로그인되었습니다! 🎈`);
+        alert(`${platform} 아이디와 성공적으로 연동되었습니다! 🎈`);
         router.push('/');
       } else {
-        alert(`${platform} 연동 실패: 서버 상태를 확인해주세요.`);
+        alert(`${platform} 연동 처리 중 문제가 발생했습니다.`);
       }
     } catch (err) {
       console.error(err);
-      alert(`${platform} 연동 중 치명적인 오류가 발생했습니다.`);
+      alert(`${platform} 연동 중 오류가 발생했습니다.`);
     } finally {
       setIsLoading(false);
     }

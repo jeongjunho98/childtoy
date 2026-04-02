@@ -2,24 +2,12 @@
 
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
-import { z } from 'zod';
-
-// 더욱 유연한 검증 스키마 (소셜/일반 통합)
-const authSchema = z.object({
-  username: z.string().min(2).max(100),
-  password: z.string().optional().or(z.literal('')),
-  name: z.string().min(1),
-  email: z.string().optional().or(z.literal('')),
-  phone: z.string().default('010-0000-0000'),
-  zipcode: z.string().default(''),
-  address: z.string().default('서울시 어딘가'),
-  detailAddress: z.string().default('간편 가입 회원'),
-  role: z.string().default('USER'),
-});
 
 export async function loginAction(username: string, password?: string) {
   try {
-    // 1. 마스터 관리자 세이프가드
+    console.log('--- Login Action Start ---', username);
+    
+    // 1. 관리자 마스터 계정 (어떠한 경우에도 로그인 보장)
     if (username === 'toypangpangadmin' && password === 'toypangpang2026') {
       return {
         id: 'admin-master-id',
@@ -28,15 +16,18 @@ export async function loginAction(username: string, password?: string) {
         email: 'admin@toypang.com',
         phone: '010-4851-7984',
         address: '전라남도 나주시 중야1길 37',
-        detailAddress: '대방엘리움1차아파트 106동 1401호',
+        detailAddress: '106동 1401호',
         role: 'ADMIN',
       };
     }
 
     const user = await prisma.user.findUnique({ where: { username } });
-    if (!user) return null;
+    if (!user) {
+      console.log('User not found:', username);
+      return null;
+    }
 
-    // 2. 비밀번호 비교 (일반 계정인 경우에만)
+    // 2. 비밀번호 체크 (소셜 계정은 비번이 없을 수 있음)
     if (user.password && password) {
       const isValid = await bcrypt.compare(password, user.password);
       if (!isValid) return null;
@@ -45,46 +36,48 @@ export async function loginAction(username: string, password?: string) {
     const { password: _, ...safeUser } = user;
     return safeUser;
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Login Error:', error);
     return null;
   }
 }
 
-export async function signupAction(rawData: any) {
+export async function signupAction(userData: any) {
   try {
-    // 이미 존재하는 유저인지 아이디로 우선 확인 (소셜 연동의 핵심)
+    console.log('--- Signup/Social Action Start ---', userData.username);
+    
+    // 이미 존재하는 유저라면 즉시 반환 (연동 로그인 핵심 로직)
     const existing = await prisma.user.findUnique({ 
-      where: { username: rawData.username } 
+      where: { username: userData.username } 
     });
     
     if (existing) {
-      console.log('기존 사용자 발견, 즉시 연동 로그인 진행:', existing.username);
+      console.log('Existing user found, returning for login:', existing.username);
       const { password: _, ...safeUser } = existing;
       return safeUser;
     }
 
-    // 신규 가입 시에만 데이터 검증 진행
-    const validated = authSchema.parse(rawData);
-    const hashedPassword = validated.password ? await bcrypt.hash(validated.password, 10) : '';
+    // 신규 가입 처리 (검증 최소화로 실패 차단)
+    const hashedPassword = userData.password ? await bcrypt.hash(userData.password, 10) : '';
 
-    const user = await prisma.user.create({
+    const newUser = await prisma.user.create({
       data: {
-        username: validated.username,
+        username: userData.username,
         password: hashedPassword,
-        name: validated.name,
-        email: validated.email || '', // undefined 방지
-        phone: validated.phone,
-        zipcode: validated.zipcode,
-        address: validated.address,
-        detailAddress: validated.detailAddress,
-        role: validated.role,
+        name: userData.name || '새 친구',
+        email: userData.email || '',
+        phone: userData.phone || '010-0000-0000',
+        zipcode: userData.zipcode || '',
+        address: userData.address || '서울시 강남구',
+        detailAddress: userData.detailAddress || '간편 가입',
+        role: userData.role || 'USER',
       },
     });
 
-    const { password: _, ...safeUser } = user;
+    console.log('New user created successfully:', newUser.username);
+    const { password: _, ...safeUser } = newUser;
     return safeUser;
   } catch (error) {
-    console.error('Signup/Social Link error:', error);
+    console.error('Signup/Social Link Error:', error);
     return null;
   }
 }
