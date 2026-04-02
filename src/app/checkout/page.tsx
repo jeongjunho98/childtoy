@@ -27,6 +27,12 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState('card');
 
   useEffect(() => {
+    // 로그인 가드
+    if (!user) {
+      router.replace('/auth?mode=login');
+      return;
+    }
+
     // Daum 우편번호 스크립트 로드
     const script = document.createElement('script');
     script.src = '//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
@@ -38,11 +44,10 @@ export default function CheckoutPage() {
       setDetailAddress(user.detailAddress);
     }
 
-    // 페이지를 벗어날 때 단독 구매 상태 초기화
     return () => {
       clearDirectBuy();
     };
-  }, [user, clearDirectBuy]);
+  }, [user, clearDirectBuy, router]);
 
   const handleAddressSearch = () => {
     new window.daum.Postcode({
@@ -51,12 +56,8 @@ export default function CheckoutPage() {
         let extraAddress = '';
 
         if (data.addressType === 'R') {
-          if (data.bname !== '') {
-            extraAddress += data.bname;
-          }
-          if (data.buildingName !== '') {
-            extraAddress += (extraAddress !== '' ? `, ${data.buildingName}` : data.buildingName);
-          }
+          if (data.bname !== '') extraAddress += data.bname;
+          if (data.buildingName !== '') extraAddress += (extraAddress !== '' ? `, ${data.buildingName}` : data.buildingName);
           fullAddress += (extraAddress !== '' ? ` (${extraAddress})` : '');
         }
 
@@ -69,7 +70,6 @@ export default function CheckoutPage() {
 
   const handlePay = (e: React.FormEvent) => {
     e.preventDefault();
-    
     const methodNames: Record<string, string> = {
       card: '카드 결제',
       bank: '무통장 입금',
@@ -77,15 +77,13 @@ export default function CheckoutPage() {
       naver: '네이버페이',
       samsung: '삼성페이'
     };
-
     alert(`${methodNames[paymentMethod]} 승인 중입니다... 잠시만 기다려주세요! 💳`);
-    setTimeout(() => {
-      router.push('/checkout/success');
-    }, 1500);
+    setTimeout(() => router.push('/checkout/success'), 1500);
   };
 
-  // 구매 대상 결정: 단독 구매 상품이 있으면 단독 구매, 없으면 장바구니 전체
   const itemsToBuy = directBuyItem ? [directBuyItem] : cart;
+
+  if (!user) return null; // 리다이렉트 중 깜빡임 방지
 
   if (itemsToBuy.length === 0) {
     return (
@@ -106,7 +104,6 @@ export default function CheckoutPage() {
 
       <main className={styles.container}>
         <h1 className={styles.title}>주문서 작성 🧾</h1>
-
         <form className={styles.form} onSubmit={handlePay}>
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>1. 주문 상품 정보</h2>
@@ -125,54 +122,15 @@ export default function CheckoutPage() {
 
             <h2 className={styles.sectionTitle}>2. 배송 정보</h2>
             <div className={styles.form}>
-              <input 
-                className={styles.input} 
-                type="text" 
-                placeholder="받는 분 성함" 
-                defaultValue={user?.name || ''} 
-                required 
-              />
-              <input 
-                className={styles.input} 
-                type="tel" 
-                placeholder="휴대폰 번호 (- 제외)" 
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                required 
-              />
+              <input className={styles.input} type="text" placeholder="받는 분 성함" defaultValue={user?.name || ''} required />
+              <input className={styles.input} type="tel" placeholder="휴대폰 번호 (- 제외)" value={phone} onChange={(e) => setPhone(e.target.value)} required />
               <div style={{ display: 'flex', gap: '5px' }}>
                 <input className={styles.input} style={{ flex: 1 }} type="text" placeholder="우편번호" readOnly value={zipcode} />
-                <button 
-                  type="button" 
-                  onClick={handleAddressSearch}
-                  style={{ padding: '0 15px', background: 'var(--toy-yellow)', borderRadius: '10px', fontWeight: 'bold' }}
-                >
-                  주소검색
-                </button>
+                <button type="button" onClick={handleAddressSearch} style={{ padding: '0 15px', background: 'var(--toy-yellow)', borderRadius: '10px', fontWeight: 'bold' }}>주소검색</button>
               </div>
-              <input 
-                className={styles.input} 
-                type="text" 
-                placeholder="기본 주소" 
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                readOnly
-                required 
-              />
-              <input 
-                id="detailAddress"
-                className={styles.input} 
-                type="text" 
-                placeholder="상세 주소 (아파트/동/호수 등)" 
-                value={detailAddress}
-                onChange={(e) => setDetailAddress(e.target.value)}
-                required 
-              />
-              <select 
-                className={styles.input}
-                value={deliveryMemo}
-                onChange={(e) => setDeliveryMemo(e.target.value)}
-              >
+              <input className={styles.input} type="text" placeholder="기본 주소" value={address} onChange={(e) => setAddress(e.target.value)} readOnly required />
+              <input id="detailAddress" className={styles.input} type="text" placeholder="상세 주소 (아파트/동/호수 등)" value={detailAddress} onChange={(e) => setDetailAddress(e.target.value)} required />
+              <select className={styles.input} value={deliveryMemo} onChange={(e) => setDeliveryMemo(e.target.value)}>
                 <option value="문 앞에 놓아주세요">문 앞에 놓아주세요</option>
                 <option value="경비실에 맡겨주세요">경비실에 맡겨주세요</option>
                 <option value="택배함에 넣어주세요">택배함에 넣어주세요</option>
@@ -227,23 +185,13 @@ export default function CheckoutPage() {
           </section>
 
           <div className={styles.summary}>
-            <div className={styles.summaryRow}>
-              <span>총 상품 금액</span>
-              <span>{totalPrice.toLocaleString()}원</span>
-            </div>
-            <div className={styles.summaryRow}>
-              <span>배송비</span>
-              <span>3,000원</span>
-            </div>
+            <div className={styles.summaryRow}><span>총 상품 금액</span><span>{totalPrice.toLocaleString()}원</span></div>
+            <div className={styles.summaryRow}><span>배송비</span><span>3,000원</span></div>
             <div className={styles.summaryRow} style={{ fontWeight: 'bold', fontSize: '20px', color: 'var(--toy-pink)', marginTop: '10px' }}>
-              <span>최종 결제 금액</span>
-              <span>{(totalPrice + 3000).toLocaleString()}원</span>
+              <span>최종 결제 금액</span><span>{(totalPrice + 3000).toLocaleString()}원</span>
             </div>
           </div>
-
-          <button className={styles.payBtn} type="submit">
-            {(totalPrice + 3000).toLocaleString()}원 결제하기
-          </button>
+          <button className={styles.payBtn} type="submit">{(totalPrice + 3000).toLocaleString()}원 결제하기</button>
         </form>
       </main>
     </div>

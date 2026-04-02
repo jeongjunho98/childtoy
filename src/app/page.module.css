@@ -368,93 +368,81 @@
   box-shadow: 0 4px 0px #f06292;
 }
 
-/* Product Card */
+/* Product Grid Update for Mobile 2-column */
 .productGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 30px;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
 }
 
-.card {
-  background: white;
-  border-radius: 30px;
-  overflow: hidden;
-  transition: all 0.3s;
-  text-decoration: none;
-  color: #333;
+@media (max-width: 768px) {
+  .productGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  
+  .heroTitle {
+    font-size: 36px;
+  }
+  
+  .quickMenu {
+    overflow-x: auto;
+    justify-content: flex-start;
+    padding: 20px 10px;
+    gap: 20px;
+  }
+}
+
+.optimizedImage {
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.card:hover .optimizedImage {
+  transform: scale(1.1);
+}
+
+.cardBtns {
   display: flex;
-  flex-direction: column;
-  border: 4px solid transparent;
+  gap: 5px;
+  margin-top: 15px;
 }
 
-.card:hover {
-  transform: translateY(-10px) scale(1.02);
-  border-color: var(--toy-blue);
-  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-}
-
-.imageArea {
-  position: relative;
-  width: 100%;
-  height: 250px;
-  background: #f9f9f9;
-}
-
-.info {
-  padding: 20px;
-  text-align: center;
-}
-
-.productTitle {
-  font-size: 16px;
+.miniCartBtn, .miniBuyBtn {
+  flex: 1;
+  padding: 8px;
+  border-radius: 10px;
+  border: none;
+  font-size: 12px;
   font-weight: 800;
-  margin-bottom: 10px;
-  color: #555;
+  cursor: pointer;
 }
 
-.originalPrice {
-  font-size: 14px;
-  color: #bbb;
-  text-decoration: line-through;
+.miniCartBtn { background: #f0f0f0; color: #666; }
+.miniBuyBtn { background: var(--toy-blue); color: white; }
+
+.noResult {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 100px 0;
 }
 
-.discountRate {
-  color: #ff5252;
-  font-weight: 900;
-  font-size: 20px;
-  margin-right: 5px;
-}
-
-.currentPrice {
-  font-size: 22px;
-  font-weight: 900;
-  color: #333;
-}
-
-.pangpangBadge {
+.resetBtn {
+  margin-top: 20px;
+  padding: 10px 30px;
   background: var(--toy-blue);
   color: white;
-  padding: 4px 12px;
+  border: none;
   border-radius: 50px;
-  display: inline-block;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.welcomeMsg {
+  font-weight: 800;
+  color: #555;
   font-size: 12px;
-  font-weight: 900;
-  margin-top: 10px;
-}
-
-.socialInfo {
-  margin-top: 15px;
-  font-size: 14px;
-}
-
-.stars {
-  color: #ffca28;
-  letter-spacing: 2px;
-}
-
-.reviewCount {
-  color: #aaa;
-  margin-left: 5px;
+  margin-right: auto;
 }
 
 /* Footer */

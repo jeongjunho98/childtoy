@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import styles from "./product.module.css";
 import homeStyles from "../../page.module.css";
 import { products as staticProducts, Review } from "@/data/products";
@@ -28,13 +29,8 @@ export default function ProductDetail() {
     const fetchProduct = async () => {
       setLoading(true);
       const data = await getProductById(id);
-      if (data) {
-        setProduct(data);
-      } else {
-        // DB에 없으면 정적 데이터에서 찾기
-        const staticP = staticProducts.find(p => p.id === id);
-        setProduct(staticP);
-      }
+      if (data) setProduct(data);
+      else setProduct(staticProducts.find(p => p.id === id));
       setLoading(false);
     };
     fetchProduct();
@@ -43,22 +39,17 @@ export default function ProductDetail() {
   useEffect(() => {
     if (product) {
       const savedReviews = localStorage.getItem(`reviews_${product.id}`);
-      if (savedReviews) {
-        setReviews(JSON.parse(savedReviews));
-      } else {
-        setReviews(product.reviews || []);
-      }
+      if (savedReviews) setReviews(JSON.parse(savedReviews));
+      else setReviews(product.reviews || []);
     }
   }, [product]);
 
   const handleAddReview = (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
-      alert('로그인이 필요한 기능입니다.');
-      router.push('/auth');
+      router.push('/auth?mode=login');
       return;
     }
-
     const newReview: Review = {
       id: Date.now().toString(),
       userName: user.name,
@@ -66,7 +57,6 @@ export default function ProductDetail() {
       content: newReviewContent,
       date: new Date().toISOString().split('T')[0]
     };
-
     const updatedReviews = [newReview, ...reviews];
     setReviews(updatedReviews);
     localStorage.setItem(`reviews_${id}`, JSON.stringify(updatedReviews));
@@ -74,41 +64,14 @@ export default function ProductDetail() {
     alert('리뷰가 등록되었습니다! ✨');
   };
 
-  if (loading) {
-    return <div className="container" style={{ padding: '100px 0', textAlign: 'center' }}>상품 정보를 불러오는 중입니다... 🎈</div>;
-  }
-
-  if (!product) {
-    return <div className="container" style={{ padding: '100px 0', textAlign: 'center' }}>상품을 찾을 수 없습니다.</div>;
-  }
-
-  const handleAddToCart = () => {
-    addToCart({
-      id: product.id,
-      title: product.name,
-      price: product.price.toLocaleString(),
-      imageUrl: product.image,
-      description: product.description
-    });
-    alert('장바구니에 담겼습니다! 🛒');
-  };
-
-  const handleBuyNow = () => {
-    setDirectBuy({
-      id: product.id,
-      title: product.name,
-      price: product.price.toLocaleString(),
-      imageUrl: product.image,
-      description: product.description
-    });
-    router.push('/checkout');
-  };
+  if (loading) return <div className={homeStyles.main} style={{padding:'100px 0', textAlign:'center'}}>로딩 중... 🎈</div>;
+  if (!product) return <div className={homeStyles.main} style={{padding:'100px 0', textAlign:'center'}}>상품을 찾을 수 없습니다.</div>;
 
   return (
     <div className={homeStyles.main}>
       <div className={homeStyles.utilityBar}>
         <div className="container" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-          {user && <span style={{ fontWeight: '800', color: '#555', fontSize: '12px' }}>✨ {user.name} 친구, 반가워요!</span>}
+          {user && <span className={homeStyles.welcomeMsg}>✨ {user.name} 친구 반가워요!</span>}
           <Link href="/cs" className={homeStyles.utilityLink}>고객센터</Link>
           <Link href="/orders" className={homeStyles.utilityLink}>배송조회</Link>
           {user && <button onClick={logout} className={homeStyles.utilityLink}>로그아웃</button>}
@@ -125,11 +88,11 @@ export default function ProductDetail() {
             </div>
             <div className={homeStyles.headerIcons}>
               <Link href="/auth" className={homeStyles.iconItem}>
-                <span className={homeStyles.icon}>👤</span>
+                <div className={homeStyles.icon}>👤</div>
                 <span className={homeStyles.iconText}>{user ? '내정보' : '로그인'}</span>
               </Link>
               <Link href="/cart" className={homeStyles.iconItem}>
-                <span className={homeStyles.icon}>🛒</span>
+                <div className={homeStyles.icon}>🛒</div>
                 <span className={homeStyles.iconText}>장바구니</span>
                 <span className={homeStyles.cartBadge}>{cart.length}</span>
               </Link>
@@ -140,40 +103,39 @@ export default function ProductDetail() {
 
       <main className={styles.container}>
         <div className={styles.detailWrapper}>
-          <div className={styles.imageArea} style={{ background: '#fff' }}>
-            <img 
+          <div className={styles.imageArea}>
+            <Image 
               src={product.image} 
               alt={product.name} 
-              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+              fill 
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              style={{ objectFit: 'cover' }}
+              priority
             />
           </div>
           <div className={styles.infoArea}>
             <h1 className={styles.title}>{product.name}</h1>
             <p className={styles.price}>{product.price.toLocaleString()}원</p>
             <p className={styles.description}>{product.description}</p>
-            
             <div className={styles.btnGroup}>
-              <button className={styles.cartBtn} onClick={handleAddToCart}>
-                장바구니 담기
-              </button>
-              <button className={styles.buyBtn} onClick={handleBuyNow}>
-                바로 구매하기
-              </button>
+              <button className={styles.cartBtn} onClick={() => {
+                addToCart({...product, price: product.price.toLocaleString(), title: product.name, imageUrl: product.image});
+                alert('장바구니에 담겼습니다! 🛒');
+              }}>장바구니 담기</button>
+              <button className={styles.buyBtn} onClick={() => {
+                setDirectBuy({...product, price: product.price.toLocaleString(), title: product.name, imageUrl: product.image});
+                router.push('/checkout');
+              }}>바로 구매하기</button>
             </div>
           </div>
         </div>
 
         <section className={styles.reviewSection}>
           <h2 className={styles.reviewTitle}>솔직한 리뷰 📝 ({reviews.length})</h2>
-          
           <form className={styles.reviewForm} onSubmit={handleAddReview}>
             <div style={{ marginBottom: '10px' }}>
               <span>별점 선택: </span>
-              <select 
-                value={rating} 
-                onChange={(e) => setRating(Number(e.target.value))}
-                style={{ padding: '5px', borderRadius: '5px' }}
-              >
+              <select value={rating} onChange={(e) => setRating(Number(e.target.value))} style={{ padding: '5px', borderRadius: '5px' }}>
                 {[5,4,3,2,1].map(n => <option key={n} value={n}>{'⭐'.repeat(n)}</option>)}
               </select>
             </div>
@@ -185,11 +147,8 @@ export default function ProductDetail() {
               required
               disabled={!user}
             />
-            <button className={styles.submitReviewBtn} type="submit" disabled={!user}>
-              리뷰 등록하기
-            </button>
+            <button className={styles.submitReviewBtn} type="submit" disabled={!user}>리뷰 등록하기</button>
           </form>
-
           <div className={styles.reviewList}>
             {reviews.length === 0 ? (
               <p style={{ color: '#aaa', textAlign: 'center' }}>아직 리뷰가 없습니다. 첫 번째 리뷰를 남겨보세요!</p>
