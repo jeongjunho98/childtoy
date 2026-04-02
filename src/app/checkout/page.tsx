@@ -198,8 +198,8 @@ export default function CheckoutPage() {
 
             {paymentMethod === 'bank' && (
               <div className={styles.bankInfo}>
-                <p>입금 계좌: <strong>국민은행 123456-01-789101</strong></p>
-                <p>예금주: <strong>(주)토이팡팡</strong></p>
+                <p>입금 계좌: <strong>기업은행 971-018442-02-019</strong></p>
+                <p>예금주: <strong>정준호</strong></p>
                 <p style={{ fontSize: '12px', color: '#888', marginTop: '5px' }}>* 주문 후 24시간 이내에 입금해주셔야 주문이 완료됩니다.</p>
               </div>
             )}
