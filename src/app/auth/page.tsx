@@ -90,10 +90,10 @@ function AuthContent() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isLogin) {
-      const success = login(username, password);
+      const success = await login(username, password);
       if (success) {
         alert('로그인 성공! 🎉');
         router.push('/');
@@ -105,34 +105,45 @@ function AuthContent() {
         alert('휴대폰 본인인증을 완료해주세요.');
         return;
       }
-      signup({ 
+      const success = await signup({ 
         username, 
         password, 
         name, 
         email, 
         phone, 
+        zipcode,
         address, 
-        detailAddress 
+        detailAddress,
+        role: 'USER'
       });
-      alert('회원가입 성공! 🎉');
+      if (success) {
+        alert('회원가입 성공! 🎉');
+        router.push('/');
+      } else {
+        alert('회원가입에 실패했습니다. 이미 존재하는 아이디일 수 있습니다.');
+      }
+    }
+  };
+
+  const handleSocialLogin = async (platform: string) => {
+    const socialUser = {
+      username: `${platform.toLowerCase()}_${Date.now()}`,
+      password: '', 
+      name: `${platform} 친구`,
+      email: `${platform.toLowerCase()}@toy.pang`,
+      phone: '010-0000-0000',
+      zipcode: '12345',
+      address: '서울시 어딘가',
+      detailAddress: '동심 가득한 아파트 101호',
+      role: 'USER'
+    };
+    const success = await signup(socialUser);
+    if (success) {
+      alert(`${platform} 계정으로 간편 가입되었습니다! 🎈`);
       router.push('/');
     }
   };
 
-  const handleSocialLogin = (platform: string) => {
-    const socialUser = {
-      username: `${platform.toLowerCase()}_user`,
-      password: '',
-      name: `${platform} 친구`,
-      email: `${platform.toLowerCase()}@toy.pang`,
-      phone: '010-0000-0000',
-      address: '서울시 어딘가',
-      detailAddress: '동심 가득한 아파트 101호'
-    };
-    signup(socialUser);
-    alert(`${platform} 계정으로 간편 가입되었습니다! 🎈`);
-    router.push('/');
-  };
 
   if (user) {
     return (
