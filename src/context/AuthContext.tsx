@@ -4,14 +4,18 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 interface User {
   id: string;
+  username: string;
   name: string;
   email: string;
+  phone: string;
+  address: string;
+  detailAddress: string;
 }
 
 interface AuthContextType {
   user: User | null;
   signup: (userData: Omit<User, 'id'>) => void;
-  login: (email: string) => boolean;
+  login: (username: string, password: string) => boolean;
   logout: () => void;
   deleteAccount: () => void;
 }
@@ -34,12 +38,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(newUser);
   };
 
-  const login = (email: string) => {
-    // 실제 서비스라면 DB 검증을 하겠지만, 여기서는 가입된 유저가 있는지 체크하는 시뮬레이션입니다.
+  const login = (username: string, password: string) => {
     const savedUser = localStorage.getItem('toy_user');
     if (savedUser) {
       const parsedUser = JSON.parse(savedUser);
-      if (parsedUser.email === email) {
+      // 실제 서비스라면 비밀번호 해싱 검증을 하겠지만, 여기서는 단순 비교 시뮬레이션입니다.
+      if (parsedUser.username === username && (parsedUser.password === password || !parsedUser.password)) {
         setUser(parsedUser);
         return true;
       }
