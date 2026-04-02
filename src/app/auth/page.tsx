@@ -211,7 +211,7 @@ function AuthContent() {
               </div>
             )}
             <div style={{ display: 'flex', gap: '5px' }}>
-              <input className={styles.input} style={{ flex: 1 }} type="text" placeholder="우편번호" readOnly value={zipcode} />
+              <input className={styles.input} style={{ flex: 1 }} type="text" placeholder="우편번호" value={zipcode} readOnly required />
               <button type="button" onClick={handleAddressSearch} style={{ padding: '0 15px', background: 'var(--toy-yellow)', borderRadius: '10px', fontWeight: 'bold' }}>주소검색</button>
             </div>
             <input className={styles.input} type="text" placeholder="기본 주소" value={address} readOnly required />
