@@ -253,7 +253,7 @@ export default function Home() {
               <div className={styles.footerLogo}>토이팡팡 🎈</div>
               <div className={styles.companyInfo} style={{ fontSize: '14px', lineHeight: '1.8' }}>
                 <p>우리아이 장난감 친구 <strong>토이팡팡</strong></p>
-                <p>(주)토이팡팡 | 대표이사: 재미나이 | 서울특별시 강남구 테헤란로 123</p>
+                <p>(주)토이팡팡 | 대표이사: 정준호 | 전라남도 나주시 중야1길 37 대방엘리움1차아파트 106동 1401호</p>
                 <p>© 2026 ToyPangPang. All rights reserved.</p>
               </div>
             </div>
